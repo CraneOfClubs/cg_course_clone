@@ -528,66 +528,62 @@ void Canvas::mouseMoveEvent(QMouseEvent* event)
 
 void Canvas::fillGexes(std::map<std::pair<int32_t, int32_t>, std::pair<float, bool>> cells)
 {
-    int32_t start_pos_y = (display_offset_y % (2 * halfHeight + sizeOfGex)) + 1;
-    int32_t start_pos_x = display_offset_x % (halfWidth * 2) + 1;
+    int32_t start_pos_y = -display_offset_y + (sizeOfGex / 2) + halfHeight;
+    int32_t start_pos_x = -display_offset_x + halfWidth;
     for (int32_t j = 0; j < engine->columns; j++) {
         for (int32_t i = 0; i < engine->rows; i++) {
-            if (!(i % 2)) {
+            if ((i % 2)) {
                 start_pos_x += halfWidth;
             }
-            auto gex = getSelectedHexagon(start_pos_x + display_offset_x, start_pos_y + display_offset_y);
-            //setPixel(start_pos_x, start_pos_y, 0x00FF0000);
-            auto pair = std::make_pair(gex.x, gex.y);
-            if (0) {}
-                //setPixel(start_pos_x, start_pos_y, 0x00FF0000);
-               // floodFillScanlineStack(start_pos_y, start_pos_x, 0x00FF0000, 0x00FFFFFF);
-            else if (cells[pair].second) {
-                floodFillScanlineStack(start_pos_y, start_pos_x, 0x0000FF00, 0x00FFFFFF);
-                setPixel(start_pos_x, start_pos_y, 0x000000ff);
+            auto pair = std::make_pair(j, i);
+            if (cells[pair].second) {
+                int32_t x_off = start_pos_x;
+                int32_t y_off = start_pos_y;
+//                QMessageBox msgBox;
+//                char buf[40] = {0};
+//                sprintf(buf, "%d %d",x_off + halfWidth, y_off + ((sizeOfGex / 2) + halfHeight));
+//                msgBox.setText(buf);
+//                msgBox.exec();
+                if (x_off < 0 && getPixelColor(0, y_off) != 0x00000000)
+                {
+                    if (x_off + halfWidth < 0)
+                        x_off = -1;
+                    else
+                    x_off = 0;
+                }
 
+                if (y_off < 0 && getPixelColor(x_off, 0) != 0x00000000)
+                {
+                    if (y_off + (sizeOfGex / 2) + halfHeight < 0)
+                        y_off = -1;
+                    else
+                    y_off = 0;
+                }
+
+                floodFillScanlineStack(y_off, x_off, 0x0000FF00, 0x00FFFFFF);
+                //setPixel(x_off, y_off, 0x000000ff);
             }
-            if (!(i % 2)) {
+            if ((i % 2)) {
                 start_pos_x -= halfWidth;
             }
             start_pos_y += (halfHeight + sizeOfGex);
         }
-        start_pos_y = 0;
+        start_pos_y = -display_offset_y + (sizeOfGex / 2) + halfHeight;
 
         start_pos_x += 2*(halfWidth);
     }
-
-
-//    for (int32_t j = -1; j < (int)(size_x / (2 * halfWidth) + 1); j++) {
-//        for (int32_t i = -1; i < (size_y / (sizeOfGex + halfHeight) + 2); i++) {
-//            if (!(i % 2)) {
-//                start_pos_x += halfWidth;
-//            }
-//            auto gex = getSelectedHexagon(start_pos_x + display_offset_x, start_pos_y + display_offset_y);
-//            //setPixel(start_pos_x, start_pos_y, 0x00FF0000);
-//           // auto pair = std::make_pair(gex.x, gex.y);
-//            if (gex.valid == INVALID);
-//                //setPixel(start_pos_x, start_pos_y, 0x00FF0000);
-//               // floodFillScanlineStack(start_pos_y, start_pos_x, 0x00FF0000, 0x00FFFFFF);
-//            else if (gex.valid == VALID && cells[std::make_pair(gex.x, gex.y)]) {
-//                //setPixel(start_pos_x, start_pos_y, 0x00FF0000);
-//                floodFillScanlineStack(start_pos_y, start_pos_x, 0x0000FF00, 0x00FFFFFF);
-//            }
-//            if (!(i % 2)) {
-//                start_pos_x -= halfWidth;
-//            }
-//            start_pos_y += (halfHeight + sizeOfGex);
-//        }
-//        start_pos_y = 0;
-
-//        start_pos_x += 2*(halfWidth);
-//    }
 }
 
 /*---------Обработчик колеса мыши. Используется для масштабирования поля. Думается мне это точно в VIEW.-----------*/
 void Canvas::wheelEvent(QWheelEvent *event)
 {
     if (event->orientation() == Qt::Vertical) {
-               event->delta() < 0 ? this->sizeOfGex-= 1 : this->sizeOfGex+= 1;
+               if (event->delta() < 0) {
+                   if (sizeOfGex >= 7)
+                       this->sizeOfGex-= 1;
+               } else
+                   if (sizeOfGex <= 40)
+                       this->sizeOfGex+= 1;
 
     }
     fillCanvas();

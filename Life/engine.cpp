@@ -146,6 +146,15 @@ std::map<std::pair<int32_t, int32_t>, std::pair<float, bool>> Engine::getCells()
     return *cells;
 }
 
+void Engine::startNewGame(int32_t xsize, int32_t ysize)
+{
+    columns = xsize;
+    rows = ysize;
+    cells->clear();
+    view->fillCanvas();
+    view->fillWithGex(view->getSizeOfGex(),view->getThickness(),*cells,QPoint(columns, rows));
+}
+
 bool Engine::step()
 {
     auto prev_cells = cells;
@@ -188,4 +197,5 @@ bool Engine::step()
     }
     view->fillCanvas();
     view->fillWithGex(view->getSizeOfGex(),view->getThickness(),*cells,QPoint(columns, rows));
+    return true;
 }

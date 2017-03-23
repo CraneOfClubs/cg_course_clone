@@ -25,53 +25,56 @@ MainWindow::MainWindow(QWidget *parent) :
     wgt->bindEngine(engine);
 
     timeSpinBox = new QSpinBox(this);
-    timeSpinBox->setGeometry(QRect(QPoint(340, 20), QSize(50, 20)));
+    timeSpinBox->setGeometry(QRect(QPoint(170, 20), QSize(50, 30)));
     timeSpinBox->setRange(100, 2000);
     timeSpinBox->setSingleStep(100);
     timeSpinBox->setValue(400);
     timeSpinBox->setVisible(true);
 
-    auto_button = new QPushButton("Auto mode", this);
-    auto_button->setGeometry(QRect(QPoint(400, 20), QSize(100, 20)));
+    auto_button = new QPushButton("Auto", this);
+    auto_button->setGeometry(QRect(QPoint(220, 20), QSize(40, 30)));
+
+    help_button = new QPushButton("Help", this);
+    help_button->setGeometry(QRect(QPoint(260, 20), QSize(40, 30)));
 
     save_button = new QPushButton("Save", this);
     save_button->setGeometry(QRect(QPoint(90, 20), QSize(40, 30)));
 
-    new_button = new QPushButton("About", this);
+    new_button = new QPushButton("New", this);
     new_button->setGeometry(QRect(QPoint(10, 20), QSize(40, 30)));
 
     m_button = new QPushButton("Open", this);
     box_debug = new QCheckBox("Debug mode", this);
-    box_debug->setGeometry(QRect(QPoint(10, 50), QSize(100, 20)));
+    box_debug->setGeometry(QRect(QPoint(10, 70), QSize(100, 20)));
 
     box_impacts = new QCheckBox("Show Impacts", this);
-    box_impacts->setGeometry(QRect(QPoint(250, 20), QSize(100, 20)));
+    box_impacts->setGeometry(QRect(QPoint(10, 50), QSize(100, 20)));
 
     x_offset_label = new QLabel("X Offset: ", this);
-    x_offset_label->setGeometry(QRect(QPoint(10, 70), QSize(100, 20)));
+    x_offset_label->setGeometry(QRect(QPoint(10, 90), QSize(100, 20)));
     x_offset_label->setVisible(false);
     y_offset_label = new QLabel("Y Offset:", this);
-    y_offset_label->setGeometry(QRect(QPoint(10, 90), QSize(100, 20)));
+    y_offset_label->setGeometry(QRect(QPoint(10, 110), QSize(100, 20)));
     y_offset_label->setVisible(false);
 
     x_canvas_size_label = new QLabel("X Canv. size:", this);
-    x_canvas_size_label->setGeometry(QRect(QPoint(10, 110), QSize(140, 20)));
+    x_canvas_size_label->setGeometry(QRect(QPoint(10, 130), QSize(140, 20)));
     x_canvas_size_label->setVisible(false);
     y_canvas_size_label = new QLabel("Y Canv. size:", this);
-    y_canvas_size_label->setGeometry(QRect(QPoint(10, 130), QSize(140, 20)));
+    y_canvas_size_label->setGeometry(QRect(QPoint(10, 150), QSize(140, 20)));
     y_canvas_size_label->setVisible(false);
 
     x_mouseover_label = new QLabel("X Mouseover: ", this);
-    x_mouseover_label->setGeometry(QRect(QPoint(10, 150), QSize(140, 20)));
+    x_mouseover_label->setGeometry(QRect(QPoint(10, 170), QSize(140, 20)));
     x_mouseover_label->setVisible(false);
     y_mouseover_label = new QLabel("Y Mouseover:", this);
-    y_mouseover_label->setGeometry(QRect(QPoint(10, 170), QSize(140, 20)));
+    y_mouseover_label->setGeometry(QRect(QPoint(10, 190), QSize(140, 20)));
     y_mouseover_label->setVisible(false);
 
     // устанавливаем размер и положение кнопки
-    step_button = new QPushButton("Do step", this);
-    step_button->setGeometry(QRect(QPoint(180, 20),
-    QSize(70, 30)));
+    step_button = new QPushButton("Step", this);
+    step_button->setGeometry(QRect(QPoint(130, 20),
+    QSize(40, 30)));
     m_button->setGeometry(QRect(QPoint(50, 20),
     QSize(40, 30)));
     std::map<std::pair<int32_t,int32_t>, std::pair<float, bool>> empty_map;
@@ -88,6 +91,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(step_timer, SIGNAL(timeout()), this, SLOT(handleStepTimer()));
     connect(save_button, SIGNAL(released()), this, SLOT(handleSaveButton()));
     connect(new_button, SIGNAL(released()), this, SLOT(handleNewButton()));
+    connect(help_button, SIGNAL(released()), this, SLOT(handleHelpButton()));
+    this->setWindowTitle("Conway's game of Life");
 }
 
 void MainWindow::refreshDebugInfo()
@@ -153,6 +158,12 @@ void MainWindow::resizeEvent(QResizeEvent* event)
    refresh_timer->start();
 }
 
+void MainWindow::handleHelpButton()
+{
+    HelpWindow *helpwindow = new HelpWindow(this->x() + this->width() / 2, this->y() + this->height() / 2);
+    helpwindow->exec();
+}
+
 void MainWindow::handleButton()
 {
     std::string filename;
@@ -185,21 +196,28 @@ void MainWindow::handleSaveButton() {
     engine->saveToFile(filename);
 }
 
+void MainWindow::callNewGame(int32_t xsize, int32_t ysize) {
+    engine->startNewGame(xsize, ysize);
+}
+
 void MainWindow::handleNewButton()
 {
 //    QDialog newDialog( this );
 //    newDialog.setModal( true );
 //    newDialog.exec();
-    QMessageBox msgBox;
-    msgBox.setText("Samarin Romka, 14202");
-    msgBox.exec();
+//    QMessageBox msgBox;
+//    msgBox.setText("Samarin Romka, 14202");
+//    msgBox.exec();
+    NewGameWindow *newgamewindow = new NewGameWindow(this->x() + this->width() / 2, this->y() + this->height() / 2, this);
+    newgamewindow->exec();
+   // wgt->
 }
 
 void MainWindow::handleAutoButton() {
     if (step_timer->isActive()) {
         step_timer->stop();
         step_button->setEnabled(true);
-        auto_button->setText("Auto mode");
+        auto_button->setText("Auto");
     } else
     {
         step_timer->setInterval(timeSpinBox->value());

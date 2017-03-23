@@ -31,6 +31,7 @@ public:
     void loadFromFile(std::string filename);
     void saveToFile(std::string filename);
     std::map<std::pair<int32_t,int32_t>, std::pair<float, bool>> getCells();
+    void startNewGame(int32_t xsize, int32_t ysize);
 };
 
 #endif // ENGINE_H

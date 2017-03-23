@@ -5,6 +5,8 @@
 #include <QMainWindow>
 #include <canvas.h>
 #include <engine.h>
+#include <newgamewindow.h>
+#include <helpwindow.h>
 #include <QImage>
 #include <QTimer>
 #include <QMessageBox>
@@ -29,8 +31,8 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = 0);
     void refreshDebugInfo();
-    ~MainWindow();
-
+    ~MainWindow();   
+    void callNewGame(int32_t xsize, int32_t ysize);
 protected:
     virtual void resizeEvent(QResizeEvent* event);
 
@@ -47,6 +49,7 @@ private:
     QPushButton* step_button;
     QPushButton* auto_button;
     QPushButton* new_button;
+    QPushButton* help_button;
     QCheckBox* box_debug;
     QCheckBox* box_impacts;
     QLabel* x_offset_label;
@@ -59,6 +62,7 @@ private:
 
 
 private slots:
+      void handleHelpButton();
       void handleButton();
       void handleStepTimer();
       void handleAutoButton();

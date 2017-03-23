@@ -27,11 +27,15 @@ SOURCES += main.cpp\
         mainwindow.cpp \
     canvas.cpp \
     engine.cpp \
-    settings.cpp
+    settings.cpp \
+    newgamewindow.cpp \
+    helpwindow.cpp
 
 HEADERS  += mainwindow.h \
     canvas.h \
     engine.h \
-    settings.h
+    settings.h \
+    newgamewindow.h \
+    helpwindow.h
 
 FORMS    += mainwindow.ui
