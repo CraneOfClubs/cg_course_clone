@@ -1,39 +1,40 @@
 #include "engine.h"
 
+double correctRound( double val ) {
+    return round( val * 10.0 ) / 10.0;
+}
 
 
-
-float Engine::getImpact(int32_t i, int32_t j) {
-    float sum;
+double Engine::getImpact(int32_t i, int32_t j) {
+    double sum;
     if (j % 2) {
-        sum= (*cells)[std::make_pair(i,j - 1)].second * _settings.firstImpact +
-               (*cells)[std::make_pair(i - 1,j - 1)].second * _settings.firstImpact +
-                (*cells)[std::make_pair(i - 1,j + 1)].second * _settings.firstImpact +
+        sum= (*cells)[std::make_pair(i + 1,j - 1)].second * _settings.firstImpact +
+               (*cells)[std::make_pair(i,j - 1)].second * _settings.firstImpact +
                 (*cells)[std::make_pair(i,j + 1)].second * _settings.firstImpact +
+                (*cells)[std::make_pair(i + 1,j + 1)].second * _settings.firstImpact +
                 (*cells)[std::make_pair(i + 1,j)].second * _settings.firstImpact +
                 (*cells)[std::make_pair(i - 1,j)].second * _settings.firstImpact +
                 (*cells)[std::make_pair(i,j + 2)].second * _settings.secondImpact +
                 (*cells)[std::make_pair(i,j - 2)].second * _settings.secondImpact +
-                (*cells)[std::make_pair(i - 2,j + 1)].second * _settings.secondImpact +
-                (*cells)[std::make_pair(i + 1,j + 1)].second * _settings.secondImpact +
-                (*cells)[std::make_pair(i - 2,j - 1)].second * _settings.secondImpact +
-                (*cells)[std::make_pair(i + 1,j - 1)].second * _settings.secondImpact;
+                (*cells)[std::make_pair(i - 1,j + 1)].second * _settings.secondImpact +
+                (*cells)[std::make_pair(i + 2,j + 1)].second * _settings.secondImpact +
+                (*cells)[std::make_pair(i - 1,j - 1)].second * _settings.secondImpact +
+                (*cells)[std::make_pair(i + 2,j - 1)].second * _settings.secondImpact;
     } else {
-        sum= (*cells)[std::make_pair(i,j - 1)].second * _settings.firstImpact +
-               (*cells)[std::make_pair(i + 1,j - 1)].second * _settings.firstImpact +
-                (*cells)[std::make_pair(i + 1, j + 1)].second * _settings.firstImpact +
+        sum= (*cells)[std::make_pair(i - 1,j - 1)].second * _settings.firstImpact +
+               (*cells)[std::make_pair(i,j - 1)].second * _settings.firstImpact +
                 (*cells)[std::make_pair(i, j + 1)].second * _settings.firstImpact +
+                (*cells)[std::make_pair(i - 1, j + 1)].second * _settings.firstImpact +
                 (*cells)[std::make_pair(i + 1, j)].second * _settings.firstImpact +
                 (*cells)[std::make_pair(i - 1, j)].second * _settings.firstImpact +
                 (*cells)[std::make_pair(i,j + 2)].second * _settings.secondImpact +
                 (*cells)[std::make_pair(i,j - 2)].second * _settings.secondImpact +
-                (*cells)[std::make_pair(i,j - 2)].second * _settings.secondImpact +
-                (*cells)[std::make_pair(i + 2,j + 1)].second * _settings.secondImpact +
-                (*cells)[std::make_pair(i - 1,j + 1)].second * _settings.secondImpact +
-                (*cells)[std::make_pair(i + 2,j - 1)].second * _settings.secondImpact +
-                (*cells)[std::make_pair(i - 1,j - 1)].second * _settings.secondImpact;
+                (*cells)[std::make_pair(i + 1,j + 1)].second * _settings.secondImpact +
+                (*cells)[std::make_pair(i - 2,j + 1)].second * _settings.secondImpact +
+                (*cells)[std::make_pair(i + 1,j - 1)].second * _settings.secondImpact +
+                (*cells)[std::make_pair(i - 2,j - 1)].second * _settings.secondImpact;
     }
-    return sum;
+    return correctRound(sum);
 }
 
 void Engine::reCalcImpacts(){
@@ -57,7 +58,7 @@ bool Engine::setCell(int32_t x, int32_t y)
 
 Engine::Engine(Canvas* _view)
 {
-    cells = new std::map<std::pair<int32_t, int32_t>, std::pair<float,bool>>();
+    cells = new std::map<std::pair<int32_t, int32_t>, std::pair<double,bool>>();
     view = _view;
 }
 
@@ -141,7 +142,7 @@ void Engine::saveToFile(std::string filename) {
     file.close();
 }
 
-std::map<std::pair<int32_t, int32_t>, std::pair<float, bool>> Engine::getCells()
+std::map<std::pair<int32_t, int32_t>, std::pair<double, bool>> Engine::getCells()
 {
     return *cells;
 }
@@ -157,42 +158,31 @@ void Engine::startNewGame(int32_t xsize, int32_t ysize)
 
 bool Engine::step()
 {
-    auto prev_cells = cells;
+    auto prev_cells = *cells;
 
     std::pair <int,int> buf_pair;
-    double sum = 0.0;
     reCalcImpacts();
     for (int i = 0; i < columns ; i++) {
         for (int j = 0; j < columns ; j++) {
             buf_pair = std::make_pair(i,j);
-
-
-                if ((*prev_cells)[buf_pair].second && ((*prev_cells)[buf_pair].first <= _settings.liveEnd && sum >= _settings.liveBegin)) {
+                if (prev_cells[buf_pair].second && (prev_cells[buf_pair].first <= _settings.liveEnd && prev_cells[buf_pair].first >= _settings.liveBegin)) {
                     (*cells)[buf_pair].second = true;
                     continue;
                 }
-                if ((*prev_cells)[buf_pair].second  && ((*prev_cells)[buf_pair].first <= _settings.liveBegin)) {
+                if (prev_cells[buf_pair].second  && (prev_cells[buf_pair].first <= _settings.liveBegin)) {
                     (*cells)[buf_pair].second  = false;
                     continue;
                 }
-                if ((*prev_cells)[buf_pair].second && ((*prev_cells)[buf_pair].first >= _settings.liveEnd)) {
+                if (prev_cells[buf_pair].second && (prev_cells[buf_pair].first >= _settings.liveEnd)) {
                     (*cells)[buf_pair].second  = false;
                     continue;
                 }
 
-                if (!(*prev_cells)[buf_pair].second && ((*prev_cells)[buf_pair].first >= _settings.birthBegin && sum <= _settings.birthEnd)) {
+                if (!prev_cells[buf_pair].second)
+                    if (prev_cells[buf_pair].first >= _settings.birthBegin && prev_cells[buf_pair].first <= _settings.birthEnd) {
                     (*cells)[buf_pair].second  = true;
                     continue;
                 }
-
-//                                QMessageBox msgBox;
-//                                char buf1[40] = {0};
-//                                bool biba = (*prev_cells)[buf_pair];
-//                                sprintf(buf1, "%f %d %d", sum, i , j);
-//                                //this->repaint();
-//                                msgBox.setText(buf1);
-//                                msgBox.exec();
-
         }
     }
     view->fillCanvas();

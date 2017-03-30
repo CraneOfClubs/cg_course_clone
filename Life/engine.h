@@ -16,12 +16,12 @@ class Canvas;
 class Engine
 {
 private:
-    std::map<std::pair<int32_t,int32_t>, std::pair<float, bool>> *cells;
+    std::map<std::pair<int32_t,int32_t>, std::pair<double, bool>> *cells;
     Canvas* view;
 
 public:
     settings _settings;
-    float getImpact(int32_t i, int32_t j);
+    double getImpact(int32_t i, int32_t j);
     void reCalcImpacts();
     bool step();
     bool setCell(int32_t x, int32_t y);
@@ -30,7 +30,7 @@ public:
     Engine(Canvas* _view);
     void loadFromFile(std::string filename);
     void saveToFile(std::string filename);
-    std::map<std::pair<int32_t,int32_t>, std::pair<float, bool>> getCells();
+    std::map<std::pair<int32_t,int32_t>, std::pair<double, bool>> getCells();
     void startNewGame(int32_t xsize, int32_t ysize);
 };
 

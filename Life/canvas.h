@@ -37,7 +37,7 @@ public:
     void fillCanvas();
     void drawLine(int x1, int y1, int x2, int y2, uint32_t thickness, uint32_t color);
     void storePoint(uint32_t x, uint32_t y, uint32_t color, uint16_t thickness);
-    void fillWithGex(uint16_t sizeOfGex, uint16_t thickness, std::map<std::pair<int32_t,int32_t>, std::pair<float, bool>> cells, QPoint cell_amount);
+    void fillWithGex(uint16_t sizeOfGex, uint16_t thickness, std::map<std::pair<int32_t,int32_t>, std::pair<double, bool>> cells, QPoint cell_amount);
     uint32_t getPixelColor(int32_t x, int32_t y);
     void fillAt(int32_t x, int32_t y, uint32_t color);
     void floodFillScanlineStack(int x_INVERTED, int y_INVERTED, uint32_t newColor, uint32_t oldColor);
@@ -60,7 +60,7 @@ protected:
     virtual void mouseMoveEvent(QMouseEvent *event);
 
 private:
-    void fillGexes(std::map<std::pair<int32_t,int32_t>, std::pair<float, bool>> cells);
+    void fillGexes(std::map<std::pair<int32_t,int32_t>, std::pair<double, bool>> cells);
     Engine * engine;
     struct Mouse_states {
         bool lmb = 0;

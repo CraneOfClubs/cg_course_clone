@@ -77,7 +77,7 @@ MainWindow::MainWindow(QWidget *parent) :
     QSize(40, 30)));
     m_button->setGeometry(QRect(QPoint(50, 20),
     QSize(40, 30)));
-    std::map<std::pair<int32_t,int32_t>, std::pair<float, bool>> empty_map;
+    std::map<std::pair<int32_t,int32_t>, std::pair<double, bool>> empty_map;
     wgt->fillWithGex(10,1, empty_map, QPoint(engine->columns, engine->rows));
 
    // подключаем сигнал к соответствующему слоту

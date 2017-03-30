@@ -127,10 +127,10 @@ void Canvas::brLine(uint32_t x1, uint32_t y1, uint32_t x2, uint32_t y2, uint32_t
     std::swap(y1, y2);
   }
 
-  const float dx = x2 - x1;
-  const float dy = fabs(y2 - y1);
+  const double dx = x2 - x1;
+  const double dy = fabs(y2 - y1);
 
-  float error = dx / 2.0f;
+  double error = dx / 2.0f;
   const int ystep = (y1 < y2) ? 1 : -1;
   int y = (int)y1;
 
@@ -190,7 +190,7 @@ void Canvas::drawLine(int x1, int y1, int x2, int y2, uint32_t thickness, uint32
 
 //}
 
-void Canvas::fillWithGex(uint16_t sizeOfGex, uint16_t thickness, std::map<std::pair<int32_t,int32_t>, std::pair<float, bool>> cells, QPoint cell_amount) {
+void Canvas::fillWithGex(uint16_t sizeOfGex, uint16_t thickness, std::map<std::pair<int32_t,int32_t>, std::pair<double, bool>> cells, QPoint cell_amount) {
 
     int32_t vert_lines_to_draw = cell_amount.y();
     int32_t horis_lines_to_draw = cell_amount.x();
@@ -208,15 +208,15 @@ void Canvas::fillWithGex(uint16_t sizeOfGex, uint16_t thickness, std::map<std::p
     halfWidth = offset_x;
     halfHeight = offset_y;
 
-    if ((halfHeight + sizeOfGex) * cell_amount.y() - display_offset_y < size_y) {
+    if ((halfHeight + sizeOfGex) * cell_amount.y() - display_offset_y < this->height()) {
         vert_lines_to_draw = cell_amount.y() + 1;// - (display_offset_y / (halfHeight + sizeOfGex)) + 1;
     } else
-        vert_lines_to_draw = (int32_t)(size_y / (sizeOfGex + halfHeight) + 2);
+        vert_lines_to_draw = (int32_t)(size_y / (sizeOfGex + halfHeight) + 10);
 
-    if ((halfWidth * 2) * cell_amount.x() - display_offset_x < size_x) {
+    if ((halfWidth * 2) * cell_amount.x() - display_offset_x < this->width()) {
         horis_lines_to_draw = cell_amount.x() + 1;// - (display_offset_x / (halfWidth * 2)) + 1;
     } else
-        horis_lines_to_draw = (int)(size_x / (2 * halfWidth) + 2);
+        horis_lines_to_draw = (int)(size_x / (2 * halfWidth) + 10);
 
     if (buf);
 //size_y / (sizeOfGex * 2) + 2
@@ -488,8 +488,8 @@ void Canvas::paintEvent(QPaintEvent * ) {
     painter.setPen(QPen(Qt::black));
     painter.setFont(QFont("Times", sizeOfGex - 4, QFont::Normal));
     int decOff = 0;
-    int dx = -1 * (display_offset_x % (halfWidth * 2));
-    int dy = -1 * (display_offset_y % (sizeOfGex + 2 * halfHeight));
+    int dx = -1 * (display_offset_x);
+    int dy = -1 * (display_offset_y);
     auto cells = engine->getCells();
     for (int32_t x = 0; x < engine->columns; x++) {
         for (int32_t y = 0; y < engine->rows; y++) {
@@ -526,7 +526,7 @@ void Canvas::mouseMoveEvent(QMouseEvent* event)
     }
 }
 
-void Canvas::fillGexes(std::map<std::pair<int32_t, int32_t>, std::pair<float, bool>> cells)
+void Canvas::fillGexes(std::map<std::pair<int32_t, int32_t>, std::pair<double, bool>> cells)
 {
     int32_t start_pos_y = -display_offset_y + (sizeOfGex / 2) + halfHeight;
     int32_t start_pos_x = -display_offset_x + halfWidth;
@@ -552,12 +552,28 @@ void Canvas::fillGexes(std::map<std::pair<int32_t, int32_t>, std::pair<float, bo
                     x_off = 0;
                 }
 
+                if (x_off > this->width() && getPixelColor(this->width(), y_off) != 0x00000000) //kostil
+                {
+                    if (x_off - halfWidth + 1 > this->width())
+                        x_off = -1;
+                    else
+                    x_off = this->width() - 1;
+                }
+
                 if (y_off < 0 && getPixelColor(x_off, 0) != 0x00000000)
                 {
                     if (y_off + (sizeOfGex / 2) + halfHeight < 0)
                         y_off = -1;
                     else
                     y_off = 0;
+                }
+
+                if (y_off > this->height() && getPixelColor(x_off, this->height()) != 0x00000000) //velosiped
+                {
+                    if (y_off - ((sizeOfGex / 2) + halfHeight) + 3 > this->height())
+                        y_off = -10;
+                    else
+                    y_off = this->height() - 1;
                 }
 
                 floodFillScanlineStack(y_off, x_off, 0x0000FF00, 0x00FFFFFF);
