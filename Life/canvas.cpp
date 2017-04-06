@@ -57,6 +57,7 @@ void Canvas::resizeAndMove(QRect rect) {
     this->setGeometry(rect);
     this->size_x = this->width();
     this->size_y = this->height();
+
 }
 
 
@@ -186,10 +187,6 @@ void Canvas::drawLine(int x1, int y1, int x2, int y2, uint32_t thickness, uint32
 }
 
 
-//void Canvas::drawRects(uint32_t size) {
-
-//}
-
 void Canvas::fillWithGex(uint16_t sizeOfGex, uint16_t thickness, std::map<std::pair<int32_t,int32_t>, std::pair<double, bool>> cells, QPoint cell_amount) {
 
     int32_t vert_lines_to_draw = cell_amount.y();
@@ -211,7 +208,7 @@ void Canvas::fillWithGex(uint16_t sizeOfGex, uint16_t thickness, std::map<std::p
     if ((halfHeight + sizeOfGex) * cell_amount.y() - display_offset_y < this->height()) {
         vert_lines_to_draw = cell_amount.y() + 1;// - (display_offset_y / (halfHeight + sizeOfGex)) + 1;
     } else
-        vert_lines_to_draw = (int32_t)(size_y / (sizeOfGex + halfHeight) + 10);
+        vert_lines_to_draw = cell_amount.y() + 1;//(int32_t)(size_y / (sizeOfGex + halfHeight) + 10);
 
     if ((halfWidth * 2) * cell_amount.x() - display_offset_x < this->width()) {
         horis_lines_to_draw = cell_amount.x() + 1;// - (display_offset_x / (halfWidth * 2)) + 1;
@@ -422,7 +419,9 @@ void Canvas::mousePressEvent(QMouseEvent *event){
     } else
     if (event->button() == Qt::LeftButton) {
         //floodFillScanlineStack(event->y(),event->x(), 0x0000FF00, 0x00FFFFFF);
-        getSelectedHexagon(event->x()  + display_offset_x, event->y() + display_offset_y);
+        auto prev = getSelectedHexagon(event->x()  + display_offset_x, event->y() + display_offset_y);
+        start_xor_x = prev.x;
+        start_xor_y = prev.y;
         mouse_states.lmb = true;
     } else
     if (event->button() == Qt::RightButton) {
@@ -430,6 +429,24 @@ void Canvas::mousePressEvent(QMouseEvent *event){
     }
 
 
+}
+
+void Canvas::repaintCells() {
+    auto cells = this->engine->getCells();
+        fillCanvas();
+        fillWithGex(sizeOfGex, thickness, cells, QPoint(engine->columns, engine->rows));
+}
+
+void Canvas::setDisplayOffset(int32_t x, int32_t y) {
+    if (x >= 0) {
+        display_offset_x = x;
+        repaintCells();
+    }
+
+    if (y >= 0) {
+        display_offset_y = y;
+        repaintCells();
+    }
 }
 
 void Canvas::mouseReleaseEvent(QMouseEvent *event)
@@ -446,12 +463,30 @@ void Canvas::mouseReleaseEvent(QMouseEvent *event)
             display_offset_y -= (event->y() - mouse_states.prev_y);
 
         mouse_states.mmb = false;
-        auto cells = this->engine->getCells();
-            fillCanvas();
-            fillWithGex(sizeOfGex, thickness, cells, QPoint(engine->columns, engine->rows));
-       // this->repaint();
+        repaintCells();
     } else
     if (event->button() == Qt::LeftButton) {
+        auto cur = getSelectedHexagon(event->x()  + display_offset_x, event->y() + display_offset_y);
+        if (cur.x == last_xor_x && cur.y == last_xor_y) {
+           // if (last_xor_x == start_xor_x && last_xor_y == start_xor_y) {
+            last_xor_x = -20;
+            last_xor_y = -20;
+                mouse_states.lmb = false;
+                return;
+          //  }
+        }
+        if (cur.x == start_xor_x && cur.y == start_xor_y) {
+            if (engine->getCell(cur.x, cur.y)) {
+                if (engine->resetCell(cur.x, cur.y)) {
+                    floodFillScanlineStack(event->y(),event->x(), 0x00FFFFFF, 0x0000FF00);
+                    this->repaint();
+                }
+            } else
+            if (engine->setCell(cur.x, cur.y)) {
+                floodFillScanlineStack(event->y(),event->x(), 0x0000FF00, 0x00FFFFFF);
+                this->repaint();
+            }
+        }
         mouse_states.lmb = false;
     } else
     if (event->button() == Qt::RightButton) {
@@ -476,6 +511,7 @@ void Canvas::mouseReleaseEvent(QMouseEvent *event)
 }
 
 
+#include <QThread>
 /*-------------------------------Отрисовка всего поля------------------------------------*/
 void Canvas::paintEvent(QPaintEvent * ) {
   //  image.load("C:\\alive.jpg");
@@ -499,6 +535,7 @@ void Canvas::paintEvent(QPaintEvent * ) {
             painter.drawText(QRect(dx + (halfWidth * 2) * x + decOff,
                                    dy + (sizeOfGex + halfHeight) * y,
                                    halfWidth * 2, sizeOfGex + 2 * halfHeight), Qt::AlignCenter, QString::number(cells[std::make_pair(x, y)].first));
+            //QThread::msleep(1000);
         }
     }
 
@@ -521,8 +558,28 @@ void Canvas::mouseMoveEvent(QMouseEvent* event)
                 this->repaint();
             }
         }
-    } else if (mouse_states.mmb) {
-
+    } else if (mouse_states.lmb) {
+        if (getPixelColor(event->x(), event->y()) == 0x00000000)
+            return;
+        Hex_number cur = getSelectedHexagon(event->x() + display_offset_x, event->y() + display_offset_y);
+        if (cur.x == start_xor_x && cur.y == start_xor_y) {
+            return;
+        } else {
+            start_xor_x = cur.x;
+            start_xor_y = cur.y;
+            last_xor_x = cur.x;
+            last_xor_y = cur.y;
+            if (engine->getCell(cur.x, cur.y)) {
+                if (engine->resetCell(cur.x, cur.y)) {
+                    floodFillScanlineStack(event->y(),event->x(), 0x00FFFFFF, 0x0000FF00);
+                    this->repaint();
+                }
+            } else
+            if (engine->setCell(cur.x, cur.y)) {
+                floodFillScanlineStack(event->y(),event->x(), 0x0000FF00, 0x00FFFFFF);
+                this->repaint();
+            }
+        }
     }
 }
 

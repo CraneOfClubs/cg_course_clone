@@ -37,6 +37,10 @@ MainWindow::MainWindow(QWidget *parent) :
     help_button = new QPushButton("Help", this);
     help_button->setGeometry(QRect(QPoint(260, 20), QSize(40, 30)));
 
+    settings_button = new QPushButton("Settings", this);
+    settings_button->setGeometry(QRect(QPoint(300, 20), QSize(60, 30)));
+    //settings_button->setVisible(false);
+
     save_button = new QPushButton("Save", this);
     save_button->setGeometry(QRect(QPoint(90, 20), QSize(40, 30)));
 
@@ -80,7 +84,79 @@ MainWindow::MainWindow(QWidget *parent) :
     std::map<std::pair<int32_t,int32_t>, std::pair<double, bool>> empty_map;
     wgt->fillWithGex(10,1, empty_map, QPoint(engine->columns, engine->rows));
 
-   // подключаем сигнал к соответствующему слоту
+    vertScroll = new QScrollBar(Qt::Vertical, this);
+    vertScroll->setGeometry(QRect(QPoint(130 + wgt->width(), 50), QSize(20, wgt->height())));
+    horisScroll = new QScrollBar(Qt::Horizontal, this);
+    horisScroll->setGeometry(QRect(QPoint(130, 280), QSize(wgt->width(), 20)));
+    vertScroll->setSingleStep(1);
+    horisScroll->setSingleStep(1);
+    vertScroll->setMinimum(0);
+    horisScroll->setMinimum(0);
+
+    fileMenu = menuBar()->addMenu(tr("File"));
+    gameMenu = menuBar()->addMenu(tr("Game"));
+    helpMenu = menuBar()->addMenu(tr("?"));
+
+    newAct = new QAction(tr("&New"), this);
+    newAct->setShortcuts(QKeySequence::New);
+    newAct->setStatusTip(tr("Create a new file"));
+    connect(newAct, SIGNAL (triggered()), this, SLOT(handleNewButton()));
+
+    openAct = new QAction(tr("&Open"), this);
+    openAct->setShortcuts(QKeySequence::Open);
+    openAct->setStatusTip(tr("Open saved file"));
+    connect(openAct, SIGNAL (triggered()), this, SLOT(handleButton()));
+
+    saveAct = new QAction(tr("&Save"), this);
+    saveAct->setShortcuts(QKeySequence::Save);
+    saveAct->setStatusTip(tr("Save to file"));
+    connect(saveAct, SIGNAL (triggered()), this, SLOT(handleSaveButton()));
+
+    exitAct = new QAction(tr("&Quit"), this);
+    exitAct->setShortcuts(QKeySequence::Quit);
+    exitAct->setStatusTip(tr("Quit application"));
+    connect(exitAct, SIGNAL (triggered()), this, SLOT(handleQuit()));
+
+    stepAct = new QAction(tr("&Step"), this);
+    stepAct->setShortcuts(QKeySequence::Forward);
+    stepAct->setStatusTip(tr("Do step"));
+    connect(stepAct, SIGNAL (triggered()), this, SLOT(handleStepButton()));
+
+    autoAct = new QAction(tr("&Auto"), this);
+    autoAct->setShortcuts(QKeySequence::Paste);
+    autoAct->setStatusTip(tr("Engage autostepping"));
+    connect(autoAct, SIGNAL (triggered()), this, SLOT(handleAutoButton()));
+
+    settingsAct = new QAction(tr("&Settings"), this);
+    settingsAct->setShortcuts(QKeySequence::Preferences);
+    settingsAct->setStatusTip(tr("Open settings window"));
+    connect(settingsAct, SIGNAL (triggered()), this, SLOT(handleSettingsButton()));
+
+    impactsAct = new QAction(tr("&Show impacts"), this);
+    impactsAct->setShortcuts(QKeySequence::Refresh);
+    impactsAct->setStatusTip(tr("Toggle show impacts off/on"));
+    connect(impactsAct, SIGNAL (triggered()), this, SLOT(toggleImpacts()));
+
+    fileMenu->addAction(newAct);
+    fileMenu->addAction(openAct);
+    fileMenu->addAction(saveAct);
+    fileMenu->addSeparator();
+    fileMenu->addAction(exitAct);
+
+    gameMenu->addAction(stepAct);
+    gameMenu->addAction(autoAct);
+    gameMenu->addSeparator();
+    gameMenu->addAction(impactsAct);
+    gameMenu->addAction(settingsAct);
+
+    helpAct = new QAction(tr("&Help"), this);
+    helpAct->setShortcuts(QKeySequence::HelpContents);
+    helpAct->setStatusTip(tr("Call help window"));
+    connect(helpAct, SIGNAL (triggered()), this, SLOT(handleHelpButton()));
+
+    helpMenu->addAction(helpAct);
+
+    // подключаем сигнал к соответствующему слоту
     connect(m_button, SIGNAL (released()), this, SLOT (handleButton()));
     connect(step_button, SIGNAL (released()), this, SLOT (handleStepButton()));
     connect(auto_button, SIGNAL (released()), this, SLOT (handleAutoButton()));
@@ -92,7 +168,10 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(save_button, SIGNAL(released()), this, SLOT(handleSaveButton()));
     connect(new_button, SIGNAL(released()), this, SLOT(handleNewButton()));
     connect(help_button, SIGNAL(released()), this, SLOT(handleHelpButton()));
+    connect(vertScroll, SIGNAL(valueChanged(int)), this, SLOT(handleVertScroll()));
+    connect(settings_button, SIGNAL(released()), this, SLOT(handleSettingsButton()));
     this->setWindowTitle("Conway's game of Life");
+    delayedRefresh();
 }
 
 void MainWindow::refreshDebugInfo()
@@ -115,6 +194,15 @@ extern uint16_t offset;
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+void MainWindow::toggleImpacts() {
+    wgt->showImpacts ^= true;
+    box_impacts->setChecked(wgt->showImpacts);
+    if (wgt->showImpacts) {
+        impactsAct->setText(tr("Hide impacts"));
+    } else
+        impactsAct->setText(tr("Show impacts"));
 }
 
 void MainWindow::handleShowImpacts(int toggle) {
@@ -147,7 +235,25 @@ void MainWindow::handleDebugBox(int toggle) {
 
 void MainWindow::delayedRefresh()
 {
-    wgt->resizeAndMove(QRect(X_CANVAS_OFFSET, Y_CANVAS_OFFSET ,this->width() - X_CANVAS_OFFSET, this->height() - Y_CANVAS_OFFSET));
+    wgt->resizeAndMove(QRect(X_CANVAS_OFFSET, Y_CANVAS_OFFSET ,this->width() - X_CANVAS_OFFSET - 20, this->height() - Y_CANVAS_OFFSET - 20));
+    vertScroll->setGeometry(QRect(QPoint(130 + wgt->width(), 50), QSize(20, wgt->height())));
+    horisScroll->setGeometry(QRect(QPoint(130, 50 + wgt->height()), QSize(wgt->width(), 20)));
+    int32_t drawing_x = wgt->halfWidth * 2 * engine->columns + wgt->halfWidth;
+    int32_t drawing_y = (wgt->halfHeight + wgt->getSizeOfGex()) * engine->rows + wgt->halfHeight;
+
+    horisScroll->setMaximum(abs(wgt->width() - drawing_x));
+    vertScroll->setMaximum(abs(wgt->height() - drawing_y));
+
+    if (drawing_x < wgt->width())
+        horisScroll->setEnabled(false);
+    else
+        horisScroll->setEnabled(true);
+
+    if (drawing_y < wgt->height())
+        vertScroll->setEnabled(false);
+    else
+        vertScroll->setEnabled(true);
+
     wgt->fillCanvas();
     wgt->fillWithGex(wgt->getSizeOfGex(), wgt->getThickness(), engine->getCells(), QPoint(engine->columns, engine->rows));
 }
@@ -164,6 +270,12 @@ void MainWindow::handleHelpButton()
     helpwindow->exec();
 }
 
+void MainWindow::handleSettingsButton()
+{
+    SettingsWindow *settingswindow = new SettingsWindow(this->x() + this->width() / 2, this->y() + this->height() / 2, this);
+    settingswindow->exec();
+}
+
 void MainWindow::handleButton()
 {
     std::string filename;
@@ -175,6 +287,11 @@ void MainWindow::handleButton()
 void MainWindow::handleStepButton()
 {
     engine->step();
+}
+
+void MainWindow::handleQuit()
+{
+    this->close();
 }
 
 void MainWindow::updateTime()
@@ -210,19 +327,39 @@ void MainWindow::handleNewButton()
 //    msgBox.exec();
     NewGameWindow *newgamewindow = new NewGameWindow(this->x() + this->width() / 2, this->y() + this->height() / 2, this);
     newgamewindow->exec();
-   // wgt->
+    // wgt->
+}
+
+void MainWindow::handleVertScroll()
+{
+    wgt->setDisplayOffset(-1, vertScroll->value());
+//        QDialog newDialog( this );
+//        newDialog.setModal( true );
+//        newDialog.exec();
+//        QMessageBox msgBox;
+//        msgBox.setText("Samarin Romka, 14202");
+//        msgBox.exec();
+}
+
+void MainWindow::handleHorisScroll()
+{
+    wgt->setDisplayOffset(horisScroll->value(), -1);
 }
 
 void MainWindow::handleAutoButton() {
     if (step_timer->isActive()) {
         step_timer->stop();
         step_button->setEnabled(true);
+        stepAct->setEnabled(true);
         auto_button->setText("Auto");
+        autoAct->setText("Auto");
     } else
     {
         step_timer->setInterval(timeSpinBox->value());
         step_timer->start();
         step_button->setEnabled(false);
+        stepAct->setEnabled(false);
         auto_button->setText("Stop");
+        autoAct->setText("Stop");
     }
 }

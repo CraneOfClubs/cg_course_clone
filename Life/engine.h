@@ -25,12 +25,15 @@ public:
     void reCalcImpacts();
     bool step();
     bool setCell(int32_t x, int32_t y);
+    bool resetCell(int32_t x, int32_t y);
+    bool getCell(int32_t x, int32_t y);
     int32_t columns = 30;
     int32_t rows = 30;
     Engine(Canvas* _view);
     void loadFromFile(std::string filename);
     void saveToFile(std::string filename);
     std::map<std::pair<int32_t,int32_t>, std::pair<double, bool>> getCells();
+    void setSettings(double _firstImpact, double _secondImpact, double _liveBegin, double _liveEnd, double _birthBegin, double _birthEnd);
     void startNewGame(int32_t xsize, int32_t ysize);
 };
 

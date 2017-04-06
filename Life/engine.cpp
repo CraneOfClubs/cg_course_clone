@@ -45,15 +45,43 @@ void Engine::reCalcImpacts(){
     }
 }
 
+void Engine::setSettings(double _firstImpact, double _secondImpact, double _liveBegin, double _liveEnd, double _birthBegin, double _birthEnd) {
+    _settings.firstImpact = _firstImpact;
+    _settings.secondImpact = _secondImpact;
+    _settings.liveBegin = _liveBegin;
+    _settings.liveEnd = _liveEnd;
+    _settings.birthBegin = _birthBegin;
+    _settings.birthEnd = _birthEnd;
+    reCalcImpacts();
+    view->repaint();
+}
+
 
 bool Engine::setCell(int32_t x, int32_t y)
 {
     if (x < columns && y < rows) {
         (*cells)[std::make_pair(x,y)].second = true;
-        reCalcImpacts();
+        if (view->showImpacts)
+                reCalcImpacts();
         return true;
     } else
         return false;
+}
+
+bool Engine::resetCell(int32_t x, int32_t y)
+{
+    if (x < columns && y < rows) {
+        (*cells)[std::make_pair(x,y)].second = false;
+        if (view->showImpacts)
+                reCalcImpacts();
+        return true;
+    } else
+        return false;
+}
+
+bool Engine::getCell(int32_t x, int32_t y)
+{
+    return (*cells)[std::make_pair(x,y)].second;
 }
 
 Engine::Engine(Canvas* _view)
@@ -74,6 +102,7 @@ void Engine::loadFromFile(std::string filename)
         QFile file(rot_snoshal_etogo_qt);
         if(!file.open(QIODevice::ReadOnly)) {
             QMessageBox::information(0, "error", file.errorString());
+            return;
         }
 
         QTextStream in(&file);
@@ -158,10 +187,9 @@ void Engine::startNewGame(int32_t xsize, int32_t ysize)
 
 bool Engine::step()
 {
-    auto prev_cells = *cells;
-
     std::pair <int,int> buf_pair;
     reCalcImpacts();
+    auto prev_cells = *cells;
     for (int i = 0; i < columns ; i++) {
         for (int j = 0; j < columns ; j++) {
             buf_pair = std::make_pair(i,j);
@@ -169,11 +197,11 @@ bool Engine::step()
                     (*cells)[buf_pair].second = true;
                     continue;
                 }
-                if (prev_cells[buf_pair].second  && (prev_cells[buf_pair].first <= _settings.liveBegin)) {
+                if (prev_cells[buf_pair].second  && (prev_cells[buf_pair].first < _settings.liveBegin)) {
                     (*cells)[buf_pair].second  = false;
                     continue;
                 }
-                if (prev_cells[buf_pair].second && (prev_cells[buf_pair].first >= _settings.liveEnd)) {
+                if (prev_cells[buf_pair].second && (prev_cells[buf_pair].first > _settings.liveEnd)) {
                     (*cells)[buf_pair].second  = false;
                     continue;
                 }

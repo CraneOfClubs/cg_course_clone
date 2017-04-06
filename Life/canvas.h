@@ -52,6 +52,7 @@ public:
     int32_t halfHeight = 0;
     bool showImpacts = false;
 
+    void setDisplayOffset(int32_t x, int32_t y);
 protected:
     virtual void paintEvent(QPaintEvent *);
     virtual void mousePressEvent(QMouseEvent *event);
@@ -85,6 +86,12 @@ QImage* image;
     int32_t anchor_y;
     int32_t size_x;
     int32_t size_y;
+    int32_t start_xor_x;
+    int32_t start_xor_y;
+    int32_t last_xor_x;
+    int32_t last_xor_y;
+    bool moved = false;
+    void repaintCells();
 };
 
 #endif // CANVAS_H
