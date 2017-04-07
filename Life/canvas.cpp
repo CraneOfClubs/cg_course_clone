@@ -5,11 +5,15 @@
 
 Canvas::Canvas(QWidget * parent, int32_t size_x, int32_t size_y) : QWidget(parent)
 {
-
     this->size_x = size_x;
     this->size_y = size_y;
     image = new QImage(QSize(size_x,size_y), QImage::Format_RGB32);
     setMouseTracking(true);
+}
+
+void Canvas::addScrolls(QScrollBar* horis, QScrollBar* vert) {
+    horisScroll = horis;
+    vertScroll = vert;
 }
 
 void Canvas::bindEngine(Engine *engine)
@@ -213,7 +217,7 @@ void Canvas::fillWithGex(uint16_t sizeOfGex, uint16_t thickness, std::map<std::p
     if ((halfWidth * 2) * cell_amount.x() - display_offset_x < this->width()) {
         horis_lines_to_draw = cell_amount.x() + 1;// - (display_offset_x / (halfWidth * 2)) + 1;
     } else
-        horis_lines_to_draw = (int)(size_x / (2 * halfWidth) + 10);
+        horis_lines_to_draw = cell_amount.x() + 1;//(int)(size_x / (2 * halfWidth) + 10);
 
     if (buf);
 //size_y / (sizeOfGex * 2) + 2
@@ -452,6 +456,7 @@ void Canvas::setDisplayOffset(int32_t x, int32_t y) {
 void Canvas::mouseReleaseEvent(QMouseEvent *event)
 {
     if (event->button() == Qt::MidButton) {
+        return;
         if (display_offset_x - (event->x() - mouse_states.prev_x) < 0) {
             display_offset_x = 0;
         } else
@@ -463,6 +468,23 @@ void Canvas::mouseReleaseEvent(QMouseEvent *event)
             display_offset_y -= (event->y() - mouse_states.prev_y);
 
         mouse_states.mmb = false;
+
+        int32_t drawing_x = halfWidth * 2 * engine->columns + halfWidth;
+        int32_t drawing_y = (halfHeight + getSizeOfGex()) * engine->rows + halfHeight;
+
+        if (drawing_x < width())
+            horisScroll->setEnabled(false);
+        else
+            horisScroll->setEnabled(true);
+
+        if (drawing_y < height())
+            vertScroll->setEnabled(false);
+        else
+            vertScroll->setEnabled(true);
+
+        horisScroll->setMaximum(abs(width() - drawing_x - 1));
+        vertScroll->setMaximum(abs(height() - drawing_y - 1));
+
         repaintCells();
     } else
     if (event->button() == Qt::LeftButton) {
@@ -620,7 +642,7 @@ void Canvas::fillGexes(std::map<std::pair<int32_t, int32_t>, std::pair<double, b
                 if (y_off < 0 && getPixelColor(x_off, 0) != 0x00000000)
                 {
                     if (y_off + (sizeOfGex / 2) + halfHeight < 0)
-                        y_off = -1;
+                        y_off = -10;
                     else
                     y_off = 0;
                 }
@@ -634,7 +656,7 @@ void Canvas::fillGexes(std::map<std::pair<int32_t, int32_t>, std::pair<double, b
                 }
 
                 floodFillScanlineStack(y_off, x_off, 0x0000FF00, 0x00FFFFFF);
-                //setPixel(x_off, y_off, 0x000000ff);
+               // setPixel(x_off, y_off, 0x000000ff);
             }
             if ((i % 2)) {
                 start_pos_x -= halfWidth;
@@ -659,7 +681,24 @@ void Canvas::wheelEvent(QWheelEvent *event)
                        this->sizeOfGex+= 1;
 
     }
+
     fillCanvas();
     auto test_buf = engine->getCells();
     fillWithGex(getSizeOfGex(),getThickness(),test_buf,QPoint(engine->columns, engine->rows));
+
+    int32_t drawing_x = halfWidth * 2 * engine->columns + halfWidth;
+    int32_t drawing_y = (halfHeight + getSizeOfGex()) * engine->rows + halfHeight;
+
+    if (drawing_x < width())
+        horisScroll->setEnabled(false);
+    else
+        horisScroll->setEnabled(true);
+
+    if (drawing_y < height())
+        vertScroll->setEnabled(false);
+    else
+        vertScroll->setEnabled(true);
+
+    horisScroll->setMaximum(abs(width() - drawing_x - 1));
+    vertScroll->setMaximum(abs(height() - drawing_y - 1));
 }

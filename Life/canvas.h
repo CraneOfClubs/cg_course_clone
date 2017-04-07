@@ -5,6 +5,7 @@
 #include <QtGui/QMouseEvent>
 #include <QImage>
 #include <QPoint>
+#include <QScrollBar>
 #include <math.h>
 #include <stack>
 #include <engine.h>
@@ -53,6 +54,7 @@ public:
     bool showImpacts = false;
 
     void setDisplayOffset(int32_t x, int32_t y);
+    void addScrolls(QScrollBar *horis, QScrollBar *vert);
 protected:
     virtual void paintEvent(QPaintEvent *);
     virtual void mousePressEvent(QMouseEvent *event);
@@ -61,6 +63,8 @@ protected:
     virtual void mouseMoveEvent(QMouseEvent *event);
 
 private:
+    QScrollBar *horisScroll;
+    QScrollBar *vertScroll;
     void fillGexes(std::map<std::pair<int32_t,int32_t>, std::pair<double, bool>> cells);
     Engine * engine;
     struct Mouse_states {

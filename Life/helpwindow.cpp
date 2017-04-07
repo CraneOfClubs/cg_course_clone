@@ -11,8 +11,8 @@ HelpWindow::HelpWindow(int32_t xpos, int32_t ypos)
 
     quit_button = new QPushButton("Close", this);
     quit_button->setGeometry(QRect(QPoint(30, 120), QSize(130, 30)));
-    mmbLabel = new QLabel("Hold MMB for scroll.", this);
-    mmbLabel->setGeometry(QRect(QPoint(10, 20), QSize(200, 20)));
+    //mmbLabel = new QLabel("Hold MMB for scroll.", this);
+    //mmbLabel->setGeometry(QRect(QPoint(10, 20), QSize(200, 20)));
     rmbLabel = new QLabel("Hold/Press RMB for filling.", this);
     rmbLabel->setGeometry(QRect(QPoint(10, 40), QSize(200, 20)));
     lmbLabel = new QLabel("Hold/Press LMB for XORing.", this);

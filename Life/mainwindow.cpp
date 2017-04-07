@@ -7,12 +7,12 @@ MainWindow::MainWindow(QWidget *parent) :
 {
 
     refresh_timer = new QTimer();
-    refresh_timer->setInterval(20); //100 fps?
+    refresh_timer->setInterval(10); //100 fps?
     refresh_timer->setSingleShot(true);
 
     tmr = new QTimer();
     tmr->setInterval(400); // Задаем интервал таймера
-    tmr->start(); // Запускаем таймер
+    tmr->start(); // Запускаем таймер                       `
 
     step_timer = new QTimer();
 
@@ -155,6 +155,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(helpAct, SIGNAL (triggered()), this, SLOT(handleHelpButton()));
 
     helpMenu->addAction(helpAct);
+    wgt->addScrolls(horisScroll, vertScroll);
 
     // подключаем сигнал к соответствующему слоту
     connect(m_button, SIGNAL (released()), this, SLOT (handleButton()));
@@ -169,6 +170,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(new_button, SIGNAL(released()), this, SLOT(handleNewButton()));
     connect(help_button, SIGNAL(released()), this, SLOT(handleHelpButton()));
     connect(vertScroll, SIGNAL(valueChanged(int)), this, SLOT(handleVertScroll()));
+    connect(horisScroll, SIGNAL(valueChanged(int)), this, SLOT(handleHorisScroll()));
     connect(settings_button, SIGNAL(released()), this, SLOT(handleSettingsButton()));
     this->setWindowTitle("Conway's game of Life");
     delayedRefresh();
@@ -241,8 +243,8 @@ void MainWindow::delayedRefresh()
     int32_t drawing_x = wgt->halfWidth * 2 * engine->columns + wgt->halfWidth;
     int32_t drawing_y = (wgt->halfHeight + wgt->getSizeOfGex()) * engine->rows + wgt->halfHeight;
 
-    horisScroll->setMaximum(abs(wgt->width() - drawing_x));
-    vertScroll->setMaximum(abs(wgt->height() - drawing_y));
+    horisScroll->setMaximum(abs(wgt->width() - drawing_x - 1));
+    vertScroll->setMaximum(abs(wgt->height() - drawing_y - 1));
 
     if (drawing_x < wgt->width())
         horisScroll->setEnabled(false);
@@ -314,6 +316,7 @@ void MainWindow::handleSaveButton() {
 }
 
 void MainWindow::callNewGame(int32_t xsize, int32_t ysize) {
+    wgt->setDisplayOffset(0,0);
     engine->startNewGame(xsize, ysize);
 }
 
