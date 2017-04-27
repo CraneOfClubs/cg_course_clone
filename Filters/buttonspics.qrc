@@ -1,0 +1,24 @@
+<RCC>
+    <qresource prefix="/img/buttons">
+        <file>img/save.jpg</file>
+        <file>img/open.png</file>
+    </qresource>
+    <qresource prefix="/">
+        <file>img/grayscale.png</file>
+        <file>img/emboss.jpg</file>
+        <file>img/zoom.png</file>
+        <file>img/negative.jpg</file>
+        <file>img/edge.png</file>
+        <file>img/roberts.png</file>
+        <file>img/sobel.png</file>
+        <file>img/blur.png</file>
+        <file>img/box_blur.png</file>
+        <file>img/gaussian_blur.png</file>
+        <file>img/gamma.png</file>
+        <file>img/sharpness.png</file>
+        <file>img/watercolor.png</file>
+        <file>img/apply.png</file>
+        <file>img/dither.png</file>
+        <file>img/rotate.png</file>
+    </qresource>
+</RCC>
