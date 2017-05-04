@@ -41,6 +41,14 @@ SettingWidget::SettingWidget(QWidget *parent, int32_t size_x, int32_t size_y) : 
     connect(firstControlSlider, SIGNAL(valueChanged(int)), this, SLOT(handleFirstControlSlider(int)));
     connect(secondControlSlider, SIGNAL(valueChanged(int)), this, SLOT(handleSecondControlSlider(int)));
     connect(thirdControlSlider, SIGNAL(valueChanged(int)), this, SLOT(handleThirdControlSlider(int)));
+
+    connect(firstControlSlider, SIGNAL(valueChanged(int)), parent, SLOT(apply()));
+    connect(secondControlSlider, SIGNAL(valueChanged(int)), parent, SLOT(apply()));
+    connect(thirdControlSlider, SIGNAL(valueChanged(int)), parent, SLOT(apply()));
+
+    connect(firstControlSpinBox, SIGNAL(valueChanged(int)), this, SLOT(handleFirstControlSpinbox(int)));
+    connect(secondControlSpinBox, SIGNAL(valueChanged(int)), this, SLOT(handleSecondControlSpinbox(int)));
+    connect(thirdControlSpinBox, SIGNAL(valueChanged(int)), this, SLOT(handleThirdControlSpinbox(int)));
 }
 
 void SettingWidget::handleFirstControlSlider(int val) {
@@ -55,6 +63,18 @@ void SettingWidget::handleThirdControlSlider(int val) {
     thirdControlSpinBox->setValue(thirdControlSlider->value());
 }
 
+void SettingWidget::handleFirstControlSpinbox(int val) {
+    firstControlSlider->setValue(firstControlSpinBox->value());
+}
+
+void SettingWidget::handleSecondControlSpinbox(int val) {
+    secondControlSlider->setValue(secondControlSpinBox->value());
+}
+
+void SettingWidget::handleThirdControlSpinbox(int val) {
+    thirdControlSlider->setValue(thirdControlSpinBox->value());
+}
+
 void SettingWidget::setFirstControl(QString name, double start_pos, double end_pos, double step_amount, int position, bool visible, bool fp)
 {
     first_fp = fp;
@@ -63,24 +83,24 @@ void SettingWidget::setFirstControl(QString name, double start_pos, double end_p
     if (!fp) {
         firstControlSlider->setRange(round(start_pos), round(end_pos));
         firstControlSlider->setSingleStep(round(step_amount));
-        firstControlSlider->setValue(round(start_pos));
+        firstControlSlider->setValue(round(position));
         firstControlSlider->setVisible(visible);
         firstControlSlider->setEnabled(true);
 
         firstControlSpinBox->setRange(round(start_pos), round(end_pos));
         firstControlSpinBox->setSingleStep(round(step_amount));
-        firstControlSpinBox->setValue(round(start_pos));
+        firstControlSpinBox->setValue(round(position));
         firstControlSpinBox->setVisible(visible);
     } else {
         firstControlSlider->setRange(start_pos, end_pos);
         firstControlSlider->setSingleStep(step_amount);
-        firstControlSlider->setValue(start_pos);
+        firstControlSlider->setValue(position);
         firstControlSlider->setVisible(visible);
         firstControlSlider->setEnabled(true);
 
         firstControlSpinBox->setRange(start_pos, end_pos);
         firstControlSpinBox->setSingleStep(step_amount);
-        firstControlSpinBox->setValue(start_pos);
+        firstControlSpinBox->setValue(position);
         firstControlSpinBox->setVisible(visible);
     }
     firstControlName->setGeometry(QRect(QPoint(50, 20 + position * 30), QSize(60, 20)));
@@ -96,13 +116,13 @@ void SettingWidget::setSecondControl(QString name, double start_pos, double end_
     if (!fp) {
         secondControlSlider->setRange(round(start_pos), round(end_pos));
         secondControlSlider->setSingleStep(round(step_amount));
-        secondControlSlider->setValue(round(start_pos));
+        secondControlSlider->setValue(round(position));
         secondControlSlider->setVisible(visible);
         secondControlSlider->setEnabled(true);
 
         secondControlSpinBox->setRange(round(start_pos), round(end_pos));
         secondControlSpinBox->setSingleStep(round(step_amount));
-        secondControlSpinBox->setValue(round(start_pos));
+        secondControlSpinBox->setValue(round(position));
         secondControlSpinBox->setVisible(visible);
     }
     secondControlName->setGeometry(QRect(QPoint(50, 20 + position * 30), QSize(60, 20)));
@@ -133,13 +153,13 @@ void SettingWidget::setThirdControl(QString name, double start_pos, double end_p
     if (!fp) {
         thirdControlSlider->setRange(round(start_pos), round(end_pos));
         thirdControlSlider->setSingleStep(round(step_amount));
-        thirdControlSlider->setValue(round(start_pos));
+        thirdControlSlider->setValue(round(position));
         thirdControlSlider->setVisible(visible);
         thirdControlSlider->setEnabled(true);
 
         thirdControlSpinBox->setRange(round(start_pos), round(end_pos));
         thirdControlSpinBox->setSingleStep(round(step_amount));
-        thirdControlSpinBox->setValue(round(start_pos));
+        thirdControlSpinBox->setValue(round(position));
         thirdControlSpinBox->setVisible(visible);
     }
     thirdControlName->setGeometry(QRect(QPoint(50, 20 + position * 30), QSize(60, 20)));

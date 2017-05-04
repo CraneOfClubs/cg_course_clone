@@ -21,7 +21,7 @@ uchar FiltersCluster::getClosestColor(uchar color, int shades) {
     return period * (int) ((color + period / 2) / period);
 }
 
-QImage FiltersCluster::FloydSteinbergFilter(QImage image, QProgressBar *tracking, uint8_t red, uint8_t green, uint8_t blue, int32_t matrix_size) {
+QImage FiltersCluster::FloydSteinbergFilter(QImage image, uint8_t red, uint8_t green, uint8_t blue, int32_t matrix_size) {
     uint8_t color_settings[3];
     color_settings[0] = red;
     color_settings[1] = green;
@@ -43,13 +43,15 @@ QImage FiltersCluster::FloydSteinbergFilter(QImage image, QProgressBar *tracking
                 image.bits()[(j + 1) * image.width() * 4 + (i + 1) * 4 + k] = fixC(ll);
             }
         }
+        emit alertProgress(round((double)j / (double)image.height() * 100));
     }
+    emit alertProgress(100);
     return image;
 }
 
 float PI = 3.1415926535897f;
 
-QImage FiltersCluster::rotateImage(QImage image, QProgressBar *tracking, int32_t angle_tt) {
+QImage FiltersCluster::rotateImage(QImage image, int32_t angle_tt) {
     QImage filtered_image(image.size(), QImage::Format_RGBA8888);
     float angle = (float) angle_tt / 180.0 * PI;
     for (int32_t j = 0; j < image.height(); j++) {
@@ -63,46 +65,13 @@ QImage FiltersCluster::rotateImage(QImage image, QProgressBar *tracking, int32_t
             filtered_image.bits()[j * filtered_image.width() * 4 + i * 4 + 3] = Pixel.getAlpha();
 
         }
+        emit alertProgress(round((double)j / (double)image.height() * 100));
     }
     return filtered_image;
 }
 
-std::vector<float> FiltersCluster::buildMatrix(int size) {
-    int done_size = 2;
-    std::vector<int> matrix({0, 2, 3, 1});
-    while (done_size < size) {
-        std::vector<int> doubled(done_size * 2 * done_size * 2);
-        for (int32_t j = 0; j < done_size; j++) {
-            for (int32_t i = 0; i < done_size; i++) {
-                doubled[j * done_size * 2 + i] = 4 * matrix[j * done_size + i];
-            }
-        }
-        for (int32_t j = 0; j < done_size; j++) {
-            for (int32_t i = 0; i < done_size; i++) {
-                doubled[j * done_size * 2 + done_size + i] = 4 * matrix[j * done_size + i] + 2;
-            }
-        }
-        for (int32_t j = 0; j < done_size; j++) {
-            for (int32_t i = 0; i < done_size; i++) {
-                doubled[(j + done_size) * done_size * 2 + i] = 4 * matrix[j * done_size + i] + 3;
-            }
-        }
-        for (int32_t j = 0; j < done_size; j++) {
-            for (int32_t i = 0; i < done_size; i++) {
-                doubled[(j + done_size) * done_size * 2 + done_size + i] = 4 * matrix[j * done_size + i] + 1;
-            }
-        }
-        matrix = doubled;
-        done_size = done_size * 2;
-    }
-    std::vector<float> float_matrix(size * size);
-    for (int32_t i = 0; i < size * size; i++) {
-        float_matrix[i] = (float) matrix[i] / (float) (size * size);
-    }
-    return float_matrix;
-}
 
-QImage FiltersCluster::orderedDithering(QImage image, QProgressBar *tracking, int32_t matrix_size) {
+QImage FiltersCluster::orderedDithering(QImage image, int32_t matrix_size) {
     QImage filtered_image(image.size(), QImage::Format_RGBA8888);
     int done_size = 2;
     std::vector<int> matrix({0, 2, 3, 1});
@@ -147,13 +116,15 @@ QImage FiltersCluster::orderedDithering(QImage image, QProgressBar *tracking, in
                     filtered_image.bits()[j * image.width() * 4 + i * 4 + k] = 0;
             }
         }
+        emit alertProgress(round((double)j / (double)image.height() * 100));
     }
+    emit alertProgress(100);
     return filtered_image;
 }
 
 
 
-QImage FiltersCluster::grayScale(QImage image, QProgressBar *tracking) {
+QImage FiltersCluster::grayScale(QImage image) {
     QImage filtered_image(image.size(), QImage::Format_RGBA8888);
     for (int32_t j = 0; j < filtered_image.height(); j++) {
         for (int32_t i = 0; i < filtered_image.width(); i++) {
@@ -163,6 +134,7 @@ QImage FiltersCluster::grayScale(QImage image, QProgressBar *tracking) {
             filtered_image.bits()[cur_char + 2] = 0.2126 * (double)image.bits()[cur_char] + 0.7152 * (double)image.bits()[cur_char + 1] + 0.0722 * (double)image.bits()[cur_char + 2];
             filtered_image.bits()[cur_char + 3] = image.bits()[cur_char + 3];
         }
+        emit alertProgress(round((double)j / (double)image.height() * 100));
     }
     return filtered_image;
 }
@@ -187,7 +159,7 @@ int32_t bound (int32_t val) {
     return val;
 }
 
-QImage FiltersCluster::Embossing(QImage image, QProgressBar *tracking) {
+QImage FiltersCluster::Embossing(QImage image) {
     QImage filtered_image(image.size(), QImage::Format_RGBA8888);
     float matrix[9] ={ 0.0, 1.0, 0.0, -1.0, 0.0, 1.0, 0.0, -1.0, 0.0};
     int matrixSize = 3;
@@ -208,11 +180,12 @@ QImage FiltersCluster::Embossing(QImage image, QProgressBar *tracking) {
             }
             filtered_image.bits()[j * filtered_image.width() * 4 + i * 4 + 3] = image.bits()[j * image.width() * 4 + i * 4 + 3];
         }
+        emit alertProgress(round((double)j / (double)image.height() * 100));
     }
     return filtered_image;
 }
 
-QImage FiltersCluster::Scale(QImage image, QProgressBar *tracking, int32_t scale_factor) {
+QImage FiltersCluster::Scale(QImage image, int32_t scale_factor) {
     float scale_val;
     if (scale_factor == 0) {
         return image;
@@ -221,10 +194,11 @@ QImage FiltersCluster::Scale(QImage image, QProgressBar *tracking, int32_t scale
     } else {
         scale_val = scale_factor;
     }
+    emit alertProgress(100);
     return MyUtility::scaleImage(image, scale_val, 300, 300);
 }
 
-QImage FiltersCluster::Negative(QImage image, QProgressBar *tracking) {
+QImage FiltersCluster::Negative(QImage image) {
     QImage filtered_image(image.size(), QImage::Format_RGBA8888);
     for (int32_t j = 0; j < filtered_image.height(); j++) {
         for (int32_t i = 0; i < filtered_image.width(); i++) {
@@ -234,14 +208,15 @@ QImage FiltersCluster::Negative(QImage image, QProgressBar *tracking) {
             filtered_image.bits()[index + 2] = 255 - image.bits()[index + 2];
             filtered_image.bits()[index + 3] = image.bits()[index + 3];
         }
+        emit alertProgress(round((double)j / (double)image.height() * 100));
     }
     return filtered_image;
 }
 
-QImage FiltersCluster::Edge(QImage image, QProgressBar *tracking, int32_t threshold)
+QImage FiltersCluster::Edge(QImage image, int32_t threshold)
 {
     QImage filtered_image(image.size(), QImage::Format_RGBA8888);
-    image = grayScale(image, tracking);
+    image = grayScale(image);
     float matrix[9] ={0.0, -1.0,  0.0, -1.0,  4.0, -1.0, 0.0, -1.0, 0.0};
     int32_t matrixSize = 3;
     for (int32_t j = 0; j < filtered_image.height(); j++) {
@@ -260,13 +235,14 @@ QImage FiltersCluster::Edge(QImage image, QProgressBar *tracking, int32_t thresh
             }
             filtered_image.bits()[j * filtered_image.width() * 4 + i * 4 + 3] = image.bits()[j * image.width() * 4 + i * 4 + 3];
         }
+        emit alertProgress(round((double)j / (double)image.height() * 100));
     }
     return filtered_image;
 }
 
-QImage FiltersCluster::Roberts(QImage image, QProgressBar *tracking, int32_t threshold) {
+QImage FiltersCluster::Roberts(QImage image, int32_t threshold) {
     QImage filtered_image(image.size(), QImage::Format_RGBA8888);
-    image = grayScale(image, tracking);
+    image = grayScale(image);
     int32_t xmatrix[4] ={1, 0, 0, -1};
     int32_t ymatrix[4] ={0, 1, -1, 0};
     int32_t matrixSize = 2;
@@ -291,13 +267,14 @@ QImage FiltersCluster::Roberts(QImage image, QProgressBar *tracking, int32_t thr
             }
             filtered_image.bits()[j * filtered_image.width() * 4 + i * 4 + 3] = image.bits()[j * image.width() * 4 + i * 4 + 3];
         }
+        emit alertProgress(round((double)j / (double)image.height() * 100));
     }
     return filtered_image;
 }
 
-QImage FiltersCluster::Sobel(QImage image, QProgressBar *tracking, int32_t threshold) {
+QImage FiltersCluster::Sobel(QImage image, int32_t threshold) {
     QImage filtered_image(image.size(), QImage::Format_RGBA8888);
-    image = grayScale(image, tracking);
+    image = grayScale(image);
     int32_t xmatrix[9] ={-1, 0, 1, -2, 0, 2, -1, 0, 1};
     int32_t ymatrix[9] ={-1, -2, -1, 0, 0, 0, 1, 2, 1};
     int32_t matrixSize = 3;
@@ -322,12 +299,13 @@ QImage FiltersCluster::Sobel(QImage image, QProgressBar *tracking, int32_t thres
             }
             filtered_image.bits()[j * filtered_image.width() * 4 + i * 4 + 3] = image.bits()[j * image.width() * 4 + i * 4 + 3];
         }
+        emit alertProgress(round((double)j / (double)image.height() * 100));
     }
     return filtered_image;
 }
 
 
-QImage FiltersCluster::Blur(QImage image, QProgressBar *tracking, float* matrix, int32_t matrix_size) {
+QImage FiltersCluster::Blur(QImage image, float* matrix, int32_t matrix_size) {
     QImage filtered_image(image.size(), QImage::Format_RGBA8888);
     for (int32_t j = 0; j < filtered_image.height(); j++) {
         for (int32_t i = 0; i < filtered_image.width(); i++) {
@@ -346,26 +324,27 @@ QImage FiltersCluster::Blur(QImage image, QProgressBar *tracking, float* matrix,
             }
             filtered_image.bits()[j * filtered_image.width() * 4 + i * 4 + 3] = image.bits()[j * image.width() * 4 + i * 4 + 3];
         }
+        emit alertProgress(round((double)j / (double)image.height() * 100));
     }
     return filtered_image;
 }
 
-QImage FiltersCluster::SimpleBlur(QImage image, QProgressBar *tracking) {
+QImage FiltersCluster::SimpleBlur(QImage image) {
     float matrix[9] = {0, 1.0/6.0, 0, 1.0/6.0, 2.0/6.0, 1.0/6.0, 0, 1.0/6.0, 0};
-    return Blur(image, tracking, matrix, 3);
+    return Blur(image, matrix, 3);
 }
 
-QImage FiltersCluster::BoxBlur(QImage image, QProgressBar *tracking) {
+QImage FiltersCluster::BoxBlur(QImage image) {
     float matrix[9] = {1.0/9.0, 1.0/9.0, 1.0/9.0, 1.0/9.0, 1.0/9.0, 1.0/9.0, 1.0/9.0, 1.0/9.0, 1.0/9.0};
-    return Blur(image, tracking, matrix, 3);
+    return Blur(image, matrix, 3);
 }
 
-QImage FiltersCluster::GaussianBlur(QImage image, QProgressBar *tracking) {
+QImage FiltersCluster::GaussianBlur(QImage image) {
     float matrix[9] = {1.0/16.0, 2.0/16.0, 1.0/16.0, 2.0/16.0, 4.0/16.0, 2.0/16.0, 1.0/16.0, 2.0/16.0, 1.0/16.0};
-    return Blur(image, tracking, matrix, 3);
+    return Blur(image, matrix, 3);
 }
 
-QImage FiltersCluster::GammaCorrection(QImage image, QProgressBar *tracking, float gamma) {
+QImage FiltersCluster::GammaCorrection(QImage image, float gamma) {
     QImage filtered_image(image.size(), QImage::Format_RGBA8888);
     for (int32_t j = 0; j < filtered_image.height(); j++) {
         for (int32_t i = 0; i < filtered_image.width(); i++) {
@@ -375,22 +354,24 @@ QImage FiltersCluster::GammaCorrection(QImage image, QProgressBar *tracking, flo
             }
             filtered_image.bits()[byte + 3] = image.bits()[byte + 3];
         }
+        emit alertProgress(round((double)j / (double)image.height() * 100));
     }
     return filtered_image;
 }
 
-QImage FiltersCluster::Sharpness(QImage image, QProgressBar *tracking) {
+QImage FiltersCluster::Sharpness(QImage image) {
     float matrix[9] = {0.0, -1.0,  0.0, -1.0,  5.0, -1.0, 0.0, -1.0,  0.0};
-    return Blur(image, tracking, matrix, 3);
+    return Blur(image, matrix, 3);
 }
 
-QImage FiltersCluster::Watercolor(QImage image, QProgressBar *tracking, int32_t radius) {
+QImage FiltersCluster::Watercolor(QImage image, int32_t radius) {
     QImage filtered_image(image.size(), QImage::Format_RGBA8888);
-    int32_t** local_matrix;
-    local_matrix = (int32_t**)malloc(4 * sizeof(int*));
-    for (int32_t i = 0; i < 4; i++) {
-        local_matrix[i] = (int32_t*)malloc(radius * 4 * radius * sizeof(int));
-    }
+    std::vector<int32_t> local_matrix_s[4];
+//    int32_t** local_matrix;
+//    local_matrix = (int32_t**)malloc(4 * sizeof(int*));
+//    for (int32_t i = 0; i < 4; i++) {
+//        local_matrix[i] = (int32_t*)malloc(radius * 4 * radius * sizeof(int));
+//    }
     for (int32_t j = 0; j < filtered_image.height(); j++) {
         for (int32_t i = 0; i < filtered_image.width(); i++) {
             int32_t index = 0;
@@ -399,18 +380,23 @@ QImage FiltersCluster::Watercolor(QImage image, QProgressBar *tracking, int32_t 
                     int x = invert_b(image.width(), i + l);
                     int y = invert_b(image.height(), j + k);
                     for (int32_t i1 = 0; i1 < 4; i1++) {
-                        local_matrix[i1][index] = image.bits()[y * 4 * image.width() + x * 4 + i1];
+                        local_matrix_s[i1].push_back(image.bits()[y * 4 * image.width() + x * 4 + i1]);
+                        //local_matrix[i1][index] = image.bits()[y * 4 * image.width() + x * 4 + i1];
                     }
                     index++;
                 }
             }
             for (int32_t i1 = 0; i1 < 4; i1++) {
-                auto mid = local_matrix[i1][radius * 2 * radius];
-                std::nth_element(&local_matrix[i1][0], &mid, &local_matrix[i1][i1 + radius * 4 * radius]);
-                filtered_image.bits()[j * filtered_image.width() * 4 + i * 4 + i1] = mid;
-                memset(local_matrix[i1], 0 , radius * 4 * radius);
+                auto mid = local_matrix_s[i1].begin() + (local_matrix_s[i1].end() - local_matrix_s[i1].begin()) / 2;
+                std::nth_element(local_matrix_s[i1].begin(), mid, local_matrix_s[i1].end());
+//                auto mid = local_matrix[i1][radius * 2 * radius];
+//                std::nth_element(&local_matrix[i1][0], &mid, &local_matrix[i1][i1 + radius * 4 * radius]);
+                filtered_image.bits()[j * filtered_image.width() * 4 + i * 4 + i1] = *mid;
+                local_matrix_s[i1].clear();
+                //memset(local_matrix[i1], 0 , radius * 4 * radius);
             }
         }
+        emit alertProgress(round((double)j / (double)image.height() * 100));
     }
     return filtered_image;
 }

@@ -20,5 +20,7 @@
         <file>img/apply.png</file>
         <file>img/dither.png</file>
         <file>img/rotate.png</file>
+        <file>img/arrow_back.jpg</file>
+        <file>img/arrow_front.jpg</file>
     </qresource>
 </RCC>
