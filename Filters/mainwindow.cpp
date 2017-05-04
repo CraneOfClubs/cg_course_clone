@@ -9,7 +9,12 @@ void MainWindow::slotNoImpl()
 }
 
 void MainWindow::rotateFilter(QProgressBar *biba) {
-    filtered_view->loadImage(filters->rotateImage(*(center_view->_previewImage), biba, settingsWidget->getFirstControl()));
+    filtered_view->loadImage(filters->rotateImage(*(center_view->_previewImage), settingsWidget->getFirstControl()));
+}
+
+void MainWindow::loadFiltered(QImage image) {
+    filtered_view->loadImage(image);
+    disableEditing(false);
 }
 
 void MainWindow::apply()
@@ -19,59 +24,10 @@ if (!center_view->image_loaded) {
     QMessageBox::information(0, "Message", "Select area first!");
     return;
 }
-    switch (current_filter) {
-    case 0:
-        QMessageBox::information(0, "Message", "Choose filter first!");
-        break;
-    case 1:
-        filtered_view->loadImage(filters->rotateImage(*(center_view->_previewImage), &biba, settingsWidget->getFirstControl()));
-        break;
-    case 2:
-        filtered_view->loadImage(filters->Watercolor(*(center_view->_previewImage), &biba, settingsWidget->getFirstControl()));
-        break;
-    case 3:
-        filtered_view->loadImage(filters->orderedDithering(*(center_view->_previewImage), &biba, settingsWidget->getFirstControl()));
-        break;
-    case 4:
-        filtered_view->loadImage(filters->FloydSteinbergFilter(*(center_view->_previewImage), &biba, settingsWidget->getFirstControl(), settingsWidget->getSecondControl(), settingsWidget->getThirdControl(),4));
-        break;
-    case 5:
-        filtered_view->loadImage(filters->grayScale(*(center_view->_previewImage), &biba));
-        break;
-    case 6:
-        filtered_view->loadImage(filters->Embossing(*(center_view->_previewImage), &biba));
-        break;
-    case 7:
-        filtered_view->loadImage(filters->Scale(*(center_view->_previewImage), &biba, settingsWidget->getFirstControl()));
-        break;
-    case 8:
-        filtered_view->loadImage(filters->Negative(*(center_view->_previewImage), &biba));
-        break;
-    case 9:
-        filtered_view->loadImage(filters->Edge(*(center_view->_previewImage), &biba, settingsWidget->getFirstControl()));
-        break;
-    case 10:
-        filtered_view->loadImage(filters->Roberts(*(center_view->_previewImage), &biba, settingsWidget->getFirstControl()));
-        break;
-    case 11:
-        filtered_view->loadImage(filters->Sobel(*(center_view->_previewImage), &biba, settingsWidget->getFirstControl()));
-        break;
-    case 13:
-        filtered_view->loadImage(filters->SimpleBlur(*(center_view->_previewImage), &biba));
-        break;
-    case 14:
-        filtered_view->loadImage(filters->GaussianBlur(*(center_view->_previewImage), &biba));
-        break;
-    case 15:
-        filtered_view->loadImage(filters->GaussianBlur(*(center_view->_previewImage), &biba));
-        break;
-    case 16:
-        filtered_view->loadImage(filters->GammaCorrection(*(center_view->_previewImage), &biba, settingsWidget->getFirstControl()));
-        break;
-    case 17:
-        filtered_view->loadImage(filters->Sharpness(*(center_view->_previewImage), &biba));
-        break;
-    }
+    disableEditing(true);
+    f_handler->wait();
+    f_handler->loadImage(*(center_view->_previewImage), current_filter, settingsWidget->getFirstControl(), settingsWidget->getSecondControl(), settingsWidget->getThirdControl());
+    f_handler->start();
 }
 
 
@@ -102,6 +58,7 @@ void MainWindow::Rotate() {
     settingsWidget->setSecondControl("Green", 2.0, 255.0, 1, 1, false, false);
     settingsWidget->setThirdControl("Blue", 2.0, 255.0, 1, 2, false, false);
     current_filter = 1;
+    apply();
 }
 
 void MainWindow::Watercolor() {
@@ -109,6 +66,7 @@ void MainWindow::Watercolor() {
     settingsWidget->setSecondControl("Green", 2.0, 255.0, 1, 1, false, false);
     settingsWidget->setThirdControl("Blue", 2.0, 255.0, 1, 2, false, false);
     current_filter = 2;
+    apply();
 }
 
 void MainWindow::OrderedDither() {
@@ -116,6 +74,7 @@ void MainWindow::OrderedDither() {
     settingsWidget->setSecondControl("Green", 2.0, 255.0, 1, 1, false, false);
     settingsWidget->setThirdControl("Blue", 2.0, 255.0, 1, 2, false, false);
     current_filter = 3;
+    apply();
 }
 
 void MainWindow::Floyd() {
@@ -123,6 +82,7 @@ void MainWindow::Floyd() {
     settingsWidget->setSecondControl("Green", 2.0, 255.0, 1, 1, true, false);
     settingsWidget->setThirdControl("Blue", 2.0, 255.0, 1, 2, true, false);
     current_filter = 4;
+    apply();
 }
 
 void MainWindow::Grayscale() {
@@ -130,6 +90,7 @@ void MainWindow::Grayscale() {
     settingsWidget->setSecondControl("Green", 2.0, 255.0, 1, 1, false, false);
     settingsWidget->setThirdControl("Blue", 2.0, 255.0, 1, 2, false, false);
     current_filter = 5;
+    apply();
 }
 
 void MainWindow::Embossing() {
@@ -137,6 +98,7 @@ void MainWindow::Embossing() {
     settingsWidget->setSecondControl("Green", 2.0, 255.0, 1, 1, false, false);
     settingsWidget->setThirdControl("Blue", 2.0, 255.0, 1, 2, false, false);
     current_filter = 6;
+    apply();
 }
 
 void MainWindow::Scale() {
@@ -144,6 +106,7 @@ void MainWindow::Scale() {
     settingsWidget->setSecondControl("Green", 2.0, 255.0, 1, 1, false, false);
     settingsWidget->setThirdControl("Blue", 2.0, 255.0, 1, 2, false, false);
     current_filter = 7;
+    apply();
 }
 
 void MainWindow::Negative() {
@@ -151,6 +114,7 @@ void MainWindow::Negative() {
     settingsWidget->setSecondControl("Green", 2.0, 255.0, 1, 1, false, false);
     settingsWidget->setThirdControl("Blue", 2.0, 255.0, 1, 2, false, false);
     current_filter = 8;
+    apply();
 }
 
 void MainWindow::Edge() {
@@ -158,6 +122,7 @@ void MainWindow::Edge() {
     settingsWidget->setSecondControl("Green", 2.0, 255.0, 1, 1, false, false);
     settingsWidget->setThirdControl("Blue", 2.0, 255.0, 1, 2, false, false);
     current_filter = 9;
+    apply();
 }
 
 void MainWindow::Roberts() {
@@ -165,6 +130,7 @@ void MainWindow::Roberts() {
     settingsWidget->setSecondControl("Green", 2.0, 255.0, 1, 1, false, false);
     settingsWidget->setThirdControl("Blue", 2.0, 255.0, 1, 2, false, false);
     current_filter = 10;
+    apply();
 }
 
 void MainWindow::Sobel() {
@@ -172,6 +138,7 @@ void MainWindow::Sobel() {
     settingsWidget->setSecondControl("Green", 2.0, 255.0, 1, 1, false, false);
     settingsWidget->setThirdControl("Blue", 2.0, 255.0, 1, 2, false, false);
     current_filter = 11;
+    apply();
 }
 
 void MainWindow::Blur() {
@@ -179,6 +146,7 @@ void MainWindow::Blur() {
     settingsWidget->setSecondControl("Green", 2.0, 255.0, 1, 1, false, false);
     settingsWidget->setThirdControl("Blue", 2.0, 255.0, 1, 2, false, false);
     current_filter = 12;
+    apply();
 }
 
 void MainWindow::SimpleBlur() {
@@ -186,6 +154,7 @@ void MainWindow::SimpleBlur() {
     settingsWidget->setSecondControl("Green", 2.0, 255.0, 1, 1, false, false);
     settingsWidget->setThirdControl("Blue", 2.0, 255.0, 1, 2, false, false);
     current_filter = 13;
+    apply();
 }
 
 void MainWindow::GaussianBlur() {
@@ -193,6 +162,7 @@ void MainWindow::GaussianBlur() {
     settingsWidget->setSecondControl("Green", 2.0, 255.0, 1, 1, false, false);
     settingsWidget->setThirdControl("Blue", 2.0, 255.0, 1, 2, false, false);
     current_filter = 14;
+    apply();
 }
 
 void MainWindow::BoxBlur() {
@@ -200,6 +170,7 @@ void MainWindow::BoxBlur() {
     settingsWidget->setSecondControl("Green", 2.0, 255.0, 1, 1, false, false);
     settingsWidget->setThirdControl("Blue", 2.0, 255.0, 1, 2, false, false);
     current_filter = 15;
+    apply();
 }
 
 void MainWindow::Gamma() {
@@ -207,6 +178,7 @@ void MainWindow::Gamma() {
     settingsWidget->setSecondControl("Green", 2.0, 255.0, 1, 1, false, false);
     settingsWidget->setThirdControl("Blue", 2.0, 255.0, 1, 2, false, false);
     current_filter = 16;
+    apply();
 }
 
 void MainWindow::Sharpness() {
@@ -214,6 +186,15 @@ void MainWindow::Sharpness() {
     settingsWidget->setSecondControl("Green", 2.0, 255.0, 1, 1, false, false);
     settingsWidget->setThirdControl("Blue", 2.0, 255.0, 1, 2, false, false);
     current_filter = 17;
+    apply();
+}
+
+void MainWindow::LoadBack() {
+    center_view->loadImage(*(filtered_view->_previewImage));
+}
+
+void MainWindow::LoadRight() {
+    filtered_view->loadImage(*(center_view->_previewImage));
 }
 
 void MainWindow::saveImage() {
@@ -251,9 +232,23 @@ QToolBar* MainWindow::createToolBar()
     ptb->addAction(QIcon(":/img/sharpness.png"), tr("Sharpness"), this, SLOT(Sharpness()));
     ptb->addAction(QIcon(":/img/watercolor.png"), tr("Watercolor"), this, SLOT(Watercolor()));
     ptb->addSeparator();
+    ptb->addAction(QIcon(":/img/arrow_back.jpg"), tr("Load Back"), this, SLOT(LoadBack()));
+    ptb->addAction(QIcon(":/img/arrow_front.jpg"), tr("Load to Filtered"), this, SLOT(LoadRight()));
+    ptb->addSeparator();
     ptb->addAction(QIcon(":/img/apply.png"), tr("Apply"), this, SLOT(apply()));
 
     return ptb;
+}
+
+void MainWindow::disableEditing(bool res)
+{
+    settingsWidget->firstControlSlider->setEnabled(!res);
+    settingsWidget->secondControlSlider->setEnabled(!res);
+    settingsWidget->thirdControlSlider->setEnabled(!res);
+
+    settingsWidget->firstControlSpinBox->setEnabled(!res);
+    settingsWidget->secondControlSpinBox->setEnabled(!res);
+    settingsWidget->thirdControlSpinBox->setEnabled(!res);
 }
 
 void MainWindow::showError(QString text) {
@@ -270,6 +265,20 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    progress = new QProgressBar(this);
+    progress->setMinimum(0);
+    progress->setMaximum(100);
+    progress->setGeometry(20, 500, 500, 30);
+
+    f_handler = new FilterHandler(this, progress->maximum());
+    connect(f_handler, SIGNAL(valueChanged(int)), progress, SLOT(setValue(int)));
+
+    connect(f_handler, SIGNAL(imageReady(QImage)), this, SLOT(loadFiltered(QImage)));
+
+    QPushButton *pbRun = new QPushButton("Run", this);
+    pbRun->setGeometry(500,500,500,500);
+    connect(pbRun, SIGNAL(clicked()), f_handler, SLOT(start()));
+
     filters = new FiltersCluster;
     settingsWidget = new SettingWidget(this, 500, 200);
     setMouseTracking(true);

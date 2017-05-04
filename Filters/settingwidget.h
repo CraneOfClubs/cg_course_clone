@@ -42,6 +42,9 @@ public slots:
         void handleFirstControlSlider(int val);
         void handleSecondControlSlider(int val);
         void handleThirdControlSlider(int val);
+        void handleFirstControlSpinbox(int val);
+        void handleSecondControlSpinbox(int val);
+        void handleThirdControlSpinbox(int val);
 protected:
 
 };

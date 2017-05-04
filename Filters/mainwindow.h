@@ -15,6 +15,7 @@
 #include <filteredview.h>
 #include "settingwidget.h"
 #include <filterscluster.h>
+#include "filterhandler.h"
 
 namespace Ui {
 class MainWindow;
@@ -32,11 +33,11 @@ public:
 
     void showError(QString text);
     void selectHandler(QImage image_to_place);
-
-
 private:
+    FilterHandler *f_handler;
     Ui::MainWindow *ui;
     QToolBar *createToolBar();
+    QProgressBar* progress;
     Canvas* sourceImage;
     QGroupBox* horizontalGroupBox;
     SettingWidget* settingsWidget;
@@ -45,12 +46,14 @@ private:
     FiltersCluster* filters;
     uint8_t current_filter = 0;
     void setSettingsControls();
+    void disableEditing(bool res);
     void setFirstControl(QString name, double start_pos, double end_pos, double step_amount, int position, bool visible, bool fp);
     void rotateFilter(QProgressBar *biba);
 protected:
    // void mouseMoveEvent(QMouseEvent* event);
    // void mouseReleaseEvent(QMouseEvent *event);
 public slots:
+    void LoadBack();
     void saveImage();
     void Embossing();
     void slotNoImpl();
@@ -72,6 +75,8 @@ public slots:
     void Gamma();
     void Sharpness();
     void Watercolor();
+    void LoadRight();
+    void loadFiltered(QImage image);
 };
 
 #endif // MAINWINDOW_H

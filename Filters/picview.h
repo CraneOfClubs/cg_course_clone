@@ -12,12 +12,15 @@ class PicView : public QWidget
 private:
 
 
+    void storePixel(int32_t x, int32_t y, uint32_t color);
 public:
+    QImage* _borderImage;
     bool image_loaded = false;
     QImage * _previewImage;
     explicit PicView(QWidget *parent = 0);   
     explicit PicView(QWidget *parent, int32_t size_x, int32_t size_y);
     void loadImage(QImage image);
+    void DrawBorder();
 signals:
 
 public slots:

@@ -30,7 +30,8 @@ SOURCES += main.cpp\
     picview.cpp \
     filteredview.cpp \
     settingwidget.cpp \
-    filterscluster.cpp
+    filterscluster.cpp \
+    filterhandler.cpp
 
 HEADERS  += mainwindow.h \
     canvas.h \
@@ -39,7 +40,8 @@ HEADERS  += mainwindow.h \
     picview.h \
     filteredview.h \
     settingwidget.h \
-    filterscluster.h
+    filterscluster.h \
+    filterhandler.h
 
 FORMS    += mainwindow.ui
 

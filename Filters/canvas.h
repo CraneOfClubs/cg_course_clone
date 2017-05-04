@@ -16,14 +16,18 @@ class Canvas : public QWidget
 
 private:
     QImage* fullImage;
+    QImage* _borderImage;
     bool image_loaded = false;
     int32_t c_of_nsc_x = -1;
     int32_t c_of_nsc_y = -1;
     MainWindow *_parentwindow;
     QWidget *_parent;
+    bool lmb_pressed = false;
+    void DrawBorder();
+    void storeBorderPixel(int32_t x, int32_t y, uint32_t color);
 protected:
     virtual void paintEvent(QPaintEvent *);
-    //virtual void mousePressEvent(QMouseEvent *event);
+    virtual void mousePressEvent(QMouseEvent *event);
     virtual void mouseReleaseEvent(QMouseEvent *event);
 //    virtual void wheelEvent(QWheelEvent *event);
     virtual void mouseMoveEvent(QMouseEvent *event);
