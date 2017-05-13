@@ -41,3 +41,6 @@ HEADERS  += mainwindow.h \
     settingswindget.h
 
 FORMS    += mainwindow.ui
+
+RESOURCES += \
+    img.qrc
