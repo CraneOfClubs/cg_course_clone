@@ -24,8 +24,20 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 
 SOURCES += main.cpp\
-        mainwindow.cpp
+        mainwindow.cpp \
+    canvas.cpp \
+    colorhandler.cpp \
+    engine.cpp \
+    isolegend.cpp \
+    newfilewidget.cpp \
+    settingswindget.cpp
 
-HEADERS  += mainwindow.h
+HEADERS  += mainwindow.h \
+    canvas.h \
+    colorhandler.h \
+    engine.h \
+    isolegend.h \
+    newfilewidget.h \
+    settingswindget.h
 
 FORMS    += mainwindow.ui
