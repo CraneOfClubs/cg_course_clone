@@ -2,4 +2,11 @@
     <qresource prefix="/img">
         <file>img/new.png</file>
     </qresource>
+    <qresource prefix="/">
+        <file>img/grid.png</file>
+        <file>img/lines.png</file>
+        <file>img/open.png</file>
+        <file>img/save.jpg</file>
+        <file>img/settings.png</file>
+    </qresource>
 </RCC>

@@ -23,17 +23,33 @@ private:
     double _z_min;
     double _z_max;
     Canvas *_canvas;
-    void storePixel(QImage &image, int32_t x, int32_t y, uint32_t color);
-    void findZLimits(int32_t width, int32_t height);
+    void storePixel(QImage *image, int32_t x, int32_t y, uint32_t color);
+    bool _user_isoline = false;
+    std::vector<std::pair<QPoint, QPoint> > iterateLine(std::vector<std::pair<QPoint, double> > &edges, double value, QPoint start, QPoint end);
 public:
+    void findZLimits(int32_t width, int32_t height);
+    std::pair<double, double> getZLimits();
     void setupView(Canvas* canvas);
     void setupFuncLimits(double x_start, double y_start, double x_end, double y_end);
-    std::pair<QPoint, QPoint> getFuncLimits();
+    std::pair<std::pair<double, double>, std::pair<double, double>> getFuncLimits();
     Engine(MainWindow* window);
     double function(double x, double y);
     uint32_t getColorForLevel(double level);
     void setupColors(std::vector<uint32_t> colors);
     QImage generateImage(int32_t width, int32_t height);
+    int32_t getAmountOfLevels();
+    std::vector<double> getAllLevels();
+    std::vector<std::pair<QPoint, QPoint> > calcComplicatedMesh(std::vector<std::pair<QPoint, double> > &edges, double level, double median);
+    std::vector<uint32_t> getAllColors();
+    double getValueForPixel(int32_t width, int32_t height, int32_t _x, int32_t _y);
+    std::vector<std::pair<QPoint, QPoint> > handleSingleCell(std::vector<std::pair<QPoint, double> > &vertices, double value);
+    std::vector<std::pair<QPoint, QPoint> > handleTripleCell(std::vector<std::pair<QPoint, double> > &edges, double value);
+    int32_t getSign(int32_t offset, int32_t x, int32_t y);
+    std::vector<std::pair<QPoint, QPoint> > calcDiagonal(std::vector<std::pair<QPoint, double> > &edges, double level, bool higher);
+    void setUserIsoline(double value, bool turn_on);
+public slots:
+    double getUserIsolineLevel();
+    bool isUserIsolineActive();
 };
 
 #endif // ENGINE_H
