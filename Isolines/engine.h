@@ -12,6 +12,7 @@ class Canvas;
 class Engine
 {
 private:
+    double _iso_delim = 0;
     MainWindow * _parentwindow;
     std::vector<uint32_t> _colors;
     int32_t _isoline_levels;
@@ -36,7 +37,6 @@ public:
     double function(double x, double y);
     uint32_t getColorForLevel(double level);
     void setupColors(std::vector<uint32_t> colors);
-    QImage generateImage(int32_t width, int32_t height);
     int32_t getAmountOfLevels();
     std::vector<double> getAllLevels();
     std::vector<std::pair<QPoint, QPoint> > calcComplicatedMesh(std::vector<std::pair<QPoint, double> > &edges, double level, double median);
@@ -47,6 +47,8 @@ public:
     int32_t getSign(int32_t offset, int32_t x, int32_t y);
     std::vector<std::pair<QPoint, QPoint> > calcDiagonal(std::vector<std::pair<QPoint, double> > &edges, double level, bool higher);
     void setUserIsoline(double value, bool turn_on);
+    QImage generateImage(int32_t width, int32_t height, bool interpolate);
+    uint32_t getInterpolatedColor(double val);
 public slots:
     double getUserIsolineLevel();
     bool isUserIsolineActive();

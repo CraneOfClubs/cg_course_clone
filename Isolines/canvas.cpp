@@ -77,7 +77,7 @@ void Canvas::storePixel(QImage *image, int32_t x, int32_t y, uint32_t color){
 
 void Canvas::redraw() {
     MainWindow *mw = dynamic_cast<MainWindow*>(_parent);
-    loadImage(mw->getEngine()->generateImage(this->width(), this->height()));
+    loadImage(mw->getEngine()->generateImage(this->width(), this->height(),  mw->_interpolate));
     if (mw->_drawisolines)
         drawIsolines(mw->grid_rows, mw->grid_cols);
     if (mw->_drawgrid)
@@ -187,7 +187,7 @@ void Canvas::drawMesh(int32_t rows, int32_t cols)
 void Canvas::resizeEvent(QResizeEvent *e)
 {
     MainWindow *mw = dynamic_cast<MainWindow*>(_parent);
-    loadImage(mw->getEngine()->generateImage(this->width(), this->height()));
+    loadImage(mw->getEngine()->generateImage(this->width(), this->height(), mw->_interpolate));
     this->redraw();
     repaint();
 }

@@ -8,5 +8,7 @@
         <file>img/open.png</file>
         <file>img/save.jpg</file>
         <file>img/settings.png</file>
+        <file>img/interpolate.png</file>
+        <file>img/help.png</file>
     </qresource>
 </RCC>

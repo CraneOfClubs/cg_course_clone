@@ -37,6 +37,7 @@ double Engine::getValueForPixel(int32_t width, int32_t height, int32_t _x, int32
 }
 
 void Engine::findZLimits(int32_t width, int32_t height) {
+    _iso_delim = (_z_max - _z_min)/ (double)_isoline_levels;
     double iter_x = (_x_end - _x_start) / (double)width;
     double iter_y = (_y_end - _y_start) / (double)height;
     double cur_x = _x_start;
@@ -121,7 +122,32 @@ double Engine::function(double x, double y) {
     return cos(x) + cos(y);
 }
 
-QImage Engine::generateImage(int32_t width, int32_t height) {
+uint32_t Engine::getInterpolatedColor(double val) {
+    int32_t level_index = ((val - _z_min) / _iso_delim);
+    uint32_t color = getColorForLevel(val);
+    double rel = val - _z_min - level_index * _iso_delim;
+    int32_t sign = (rel > _iso_delim / 2) ? 1 : -1;
+    double f_current;
+    double f_around;
+    if (!(level_index + sign < 0 || level_index + sign > _colors.size() - 1)) {
+        QColor neighbor_color = QColor(QColor(_colors[level_index + sign]));
+        if (sign > 0) {
+            f_around = (double) (rel - _iso_delim / 2) / _iso_delim;
+            f_current = 1.0 - f_around;
+        } else {
+            f_around = (double) (_iso_delim / 2 - rel) / _iso_delim;
+            f_current = 1.0 - f_around;
+        }
+        QColor bufcolor = QColor::fromRgba(color);
+        bufcolor.setRed(bufcolor.red() * f_current + neighbor_color.red() * f_around);
+        bufcolor.setGreen(bufcolor.green() * f_current + neighbor_color.green() * f_around);
+        bufcolor.setBlue(bufcolor.blue() * f_current + neighbor_color.blue() * f_around);
+        color = bufcolor.rgba();
+    }
+    return color;
+}
+
+QImage Engine::generateImage(int32_t width, int32_t height, bool interpolate) {
     findZLimits(width, height);
     QImage img(QSize(width, height), QImage::Format_RGBA8888);
     double iter_x = (_x_end - _x_start) / (double)width;
@@ -132,6 +158,9 @@ QImage Engine::generateImage(int32_t width, int32_t height) {
         for (int32_t x = 0; x < img.width(); ++x) {
             double buf = function(cur_x, cur_y);
             uint32_t color = getColorForLevel(buf);
+            if (interpolate) {
+                color = getInterpolatedColor(buf);
+            }
             storePixel(&img, x, y, color);
             cur_x += iter_x;
         }
@@ -283,8 +312,10 @@ std::vector<std::pair<QPoint, QPoint>> Engine::calcComplicatedMesh(std::vector<s
 Engine::Engine(MainWindow* window)
 {
     _parentwindow = window;
-    _colors.push_back(0xFF0000FF);
     _colors.push_back(0x00FF00FF);
     _colors.push_back(0x0000FFFF);
+    _colors.push_back(0x00ffffFF);
+    _colors.push_back(0xaaaaffFF);
+    _colors.push_back(0x55557fFF);
     setupColors(_colors);
 }

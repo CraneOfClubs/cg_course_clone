@@ -38,7 +38,15 @@ Engine* MainWindow::getEngine() {
 }
 
 void MainWindow::closeIsolines() {
-    this->close();
+    std::vector<uint32_t> colors;
+    colors.push_back(0x00FF00FF);
+    colors.push_back(0x0000FFFF);
+    colors.push_back(0x00ffffFF);
+    colors.push_back(0xaaaaffFF);
+    colors.push_back(0x55557fFF);
+    engine->setupColors(colors);
+    canvas->redraw();
+    this->repaint();
 }
 
 void MainWindow::drawGrid() {
@@ -69,6 +77,19 @@ void MainWindow::openFile()
     settings->exec();
 }
 
+void MainWindow::interpolate()
+{
+    _interpolate = !_interpolate;
+    canvas->redraw();
+}
+
+
+void MainWindow::help()
+{
+    HelpWindow *help = new HelpWindow(this->x() + (this->width() /2), this->y()  + (this->height()/ 2));
+    help->exec();
+}
+
 
 
 void MainWindow::createMenu()
@@ -85,16 +106,20 @@ void MainWindow::createMenu()
 QToolBar* MainWindow::createToolBar()
 {
     QToolBar* ptb = new QToolBar(centralWidget);
-    ptb->addAction(QIcon(":/img/open.png"), tr("Open File"), this, SLOT(closeIsolines()));
-    ptb->addAction(QIcon(":/img/save.jpg"), tr("Save to file"), this, SLOT(drawIsolines()));
+//    ptb->addAction(QIcon(":/img/open.png"), tr("Open File"), this, SLOT(closeIsolines()));
+//    ptb->addAction(QIcon(":/img/save.jpg"), tr("Save to file"), this, SLOT(drawIsolines()));
     ptb->addSeparator();
     ptb->addAction(QIcon(":/img/img/new.png"), tr("New Isolines"), this, SLOT(closeIsolines()));
     ptb->addAction(QIcon(":/img/lines.png"), tr("Draw Isolines"), this, SLOT(drawIsolines()));
     ptb->addAction(QIcon(":/img/grid.png"), tr("Draw Grid"), this, SLOT(drawGrid()));
-    ptb->actions()[1]->setCheckable(4);
-    ptb->actions()[1]->setCheckable(5);
+    ptb->addAction(QIcon(":/img/interpolate.png"), tr("Interpolate"), this, SLOT(interpolate()));
+    ptb->actions()[2]->setCheckable(1);
+    ptb->actions()[3]->setCheckable(2);
+    ptb->actions()[4]->setCheckable(3);
     ptb->addSeparator();
+
     ptb->addAction(QIcon(":/img/settings.png"), tr("Settings"), this, SLOT(handleSettings()));
+    ptb->addAction(QIcon(":/img/help.png"), tr("About"), this, SLOT(help()));
     return ptb;
 }
 

@@ -10,6 +10,7 @@
 #include <engine.h>
 #include <isolegend.h>
 #include <settingswindget.h>
+#include <helpwindow.h>
 
 class SettingsWindget;
 class IsoLegend;
@@ -26,6 +27,7 @@ class MainWindow : public QMainWindow
 
 public:
     bool _drawisolines = 0;
+    bool _interpolate = 0;
     bool _drawgrid = 0;
     uint32_t grid_cols = 40;
     uint32_t grid_rows = 40;
@@ -39,13 +41,16 @@ public:
     void resizeLegend();
     Canvas *canvas;
     IsoLegend *legend;
+
 public slots:
+    void help();
     void closeIsolines();
     void drawIsolines();
     void drawGrid();
     void handleSettings();
     void openFile();
     void saveToFile();
+    void interpolate();
 private:
     Ui::MainWindow *ui;
     QMenuBar *menuBar;

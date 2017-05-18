@@ -79,11 +79,24 @@ void IsoLegend::recalcImage() {
     p.setPen(QPen(Qt::black));
     p.setFont(QFont("Times", 7, QFont::Bold));
     auto colors = mw->getEngine()->getAllColors();
+    //Костыли-костылики.
+    double _c_val = mw->getEngine()->getZLimits().first;
+    double _c_add = (mw->getEngine()->getZLimits().second - _c_val) / (this->width() - colors.size() * 2 + 2);
     for (int32_t j = 0; j < levels_amount; j++) {
         cur_pos += offset;
-        for (int32_t k = cur_start + 1; k < cur_pos; k++) {
-            for (int32_t i = 1; i < this->height() / 2; ++i) {
-                storePixel(_image, k, i, colors[j]);
+        if (!mw->_interpolate) {
+            for (int32_t k = cur_start + 1; k < cur_pos; k++) {
+                for (int32_t i = 1; i < this->height() / 2; ++i) {
+                    storePixel(_image, k, i, colors[j]);
+                }
+            }
+        } else {
+            for (int32_t k = cur_start + 1; k < cur_pos; k++) {
+                for (int32_t i = 1; i < this->height() / 2; ++i) {
+                    storePixel(_image, k, i, mw->getEngine()->getInterpolatedColor(_c_val));
+
+                }
+                _c_val += _c_add;
             }
         }
         for (int32_t i = 0; i < this->height() / 2; ++i) {

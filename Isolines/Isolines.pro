@@ -30,7 +30,8 @@ SOURCES += main.cpp\
     engine.cpp \
     isolegend.cpp \
     newfilewidget.cpp \
-    settingswindget.cpp
+    settingswindget.cpp \
+    helpwindow.cpp
 
 HEADERS  += mainwindow.h \
     canvas.h \
@@ -38,7 +39,8 @@ HEADERS  += mainwindow.h \
     engine.h \
     isolegend.h \
     newfilewidget.h \
-    settingswindget.h
+    settingswindget.h \
+    helpwindow.h
 
 FORMS    += mainwindow.ui
 
