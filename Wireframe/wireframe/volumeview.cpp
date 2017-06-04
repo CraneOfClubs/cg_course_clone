@@ -10,23 +10,47 @@ VolumeView::VolumeView(QWidget *parent) : DrawingArea(parent)
     _current_camera = transform.Camera();
 }
 
-void VolumeView::drawBoundingBox()
+void VolumeView::loadObject(CurvedObject obj) {
+    _object = obj;
+    _objectloaded = true;
+}
+
+void VolumeView::loadObjects(std::vector<CurvedObject> objects) {
+    _objects = objects;
+    _objectloaded = true;
+    this->redraw();
+}
+
+void VolumeView::drawBoundingBox(float coord)
 {
+    coord *= 1.2;
     std::vector<Line> boundcube = std::vector<Line>({
-                                                    Line(DoublePoint(-1, -1, -1), DoublePoint(1, -1, -1)),
-                                                    Line(DoublePoint(-1, -1, -1), DoublePoint(-1, 1, -1)),
-                                                    Line(DoublePoint(-1, 1, -1), DoublePoint(1, 1, -1)),
-                                                    Line(DoublePoint(1, -1, -1), DoublePoint(1, 1, -1)),
-                                                    Line(DoublePoint(-1, -1, 1), DoublePoint(1, -1, 1)),
-                                                    Line(DoublePoint(-1, -1, 1), DoublePoint(-1, 1, 1)),
-                                                    Line(DoublePoint(-1, 1, 1), DoublePoint(1, 1, 1)),
-                                                    Line(DoublePoint(1, -1, 1), DoublePoint(1, 1, 1)),
-                                                    Line(DoublePoint(-1, -1, -1), DoublePoint(-1, -1, 1)),
-                                                    Line(DoublePoint(-1, 1, -1), DoublePoint(-1, 1, 1)),
-                                                    Line(DoublePoint(1, -1, -1), DoublePoint(1, -1, 1)),
-                                                    Line(DoublePoint(1, 1, -1), DoublePoint(1, 1, 1)),
+                                                    Line(DoublePoint(-coord, -coord, -coord), DoublePoint(coord, -coord, -coord)),
+                                                    Line(DoublePoint(-coord, -coord, -coord), DoublePoint(-coord, coord, -coord)),
+                                                    Line(DoublePoint(-coord, coord, -coord), DoublePoint(coord, coord, -coord)),
+                                                    Line(DoublePoint(coord, -coord, -coord), DoublePoint(coord, coord, -coord)),
+                                                    Line(DoublePoint(-coord, -coord, coord), DoublePoint(coord, -coord, coord)),
+                                                    Line(DoublePoint(-coord, -coord, coord), DoublePoint(-coord, coord, coord)),
+                                                    Line(DoublePoint(-coord, coord, coord), DoublePoint(coord, coord, coord)),
+                                                    Line(DoublePoint(coord, -coord, coord), DoublePoint(coord, coord, coord)),
+                                                    Line(DoublePoint(-coord, -coord, -coord), DoublePoint(-coord, -coord, coord)),
+                                                    Line(DoublePoint(-coord, coord, -coord), DoublePoint(-coord, coord, coord)),
+                                                    Line(DoublePoint(coord, -coord, -coord), DoublePoint(coord, -coord, coord)),
+                                                    Line(DoublePoint(coord, coord, -coord), DoublePoint(coord, coord, coord)),
                                                    });
     this->drawFile(boundcube, 0x000000FF);
+}
+
+void VolumeView::wheelEvent(QWheelEvent *event)
+{
+    float multiplier = 1;
+    if (event->delta() > 0)
+        multiplier = 1.05;
+    else
+        multiplier = 0.95;
+    _clip_far *= multiplier;
+    _current_perspective = transform.Perspective(_clip_near, _clip_far, this->width(), this->height());
+    redraw();
 }
 
 void VolumeView::drawFile(std::vector<Line> file, uint32_t color)
@@ -59,7 +83,26 @@ void VolumeView::drawLine(QVector3D from, QVector3D to,  uint32_t color)
 
 void VolumeView::redraw() {
     memset(_image->bits(), 255, _image->height() * _image->width() * _image->depth() / 8);
-    drawBoundingBox();
+    float max_size = _objects[0].getScale();
+    drawBoundingBox(max_size);
+    if (_objectloaded) {
+        for(auto it = _objects.begin(); it != _objects.end(); ++it) {
+            drawFile((*it).getSegments(), it->_color);
+        }
+        //drawFile(_object.getSegments(), _object._color);
+    }
+    std::vector<Line> x_axis;
+    x_axis.push_back(Line(DoublePoint(0, 0, 0), DoublePoint(max_size/3, 0, 0)));
+    drawFile(x_axis, 0xFF0000FF);
+
+    std::vector<Line> y_axis;
+    y_axis.push_back(Line(DoublePoint(0, 0, 0), DoublePoint(0, max_size/3, 0)));
+    drawFile(y_axis, 0x00FF00FF);
+
+    std::vector<Line> z_axis;
+    z_axis.push_back(Line(DoublePoint(0, 0, 0), DoublePoint(0, 0, max_size/3)));
+    drawFile(z_axis, 0x0000FFFF);
+
     this->update();
 }
 

@@ -15,8 +15,9 @@ public:
     std::vector<QPointF> getKnots();
     const std::vector<Line> getSegments();
     std::vector<std::pair<QPointF, QPointF> > getSegmentsPlain();
-private:
+    float getScale();
     uint32_t _color;
+private:
     QMatrix4x4 _rotation_matrix;
     std::vector<QPointF> _knots;
     std::vector<Line> _segments;

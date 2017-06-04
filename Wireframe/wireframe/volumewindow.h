@@ -14,6 +14,8 @@ public:
     VolumeView * _viewwidget;
     QWidget *_parent;
     VolumeWindow(QWidget *parent);
+    void loadObject(CurvedObject obj);
+    void loadObjects(std::vector<CurvedObject> _objects);
 private:
 
 };

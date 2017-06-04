@@ -12,8 +12,19 @@ void BsplineView::loadObject(CurvedObject* object)
     _image = new QImage(QSize(this->width(), this->height()), QImage::Format_RGBA8888);
     memset(_image->bits(), 255, _image->height() * _image->width() * _image->depth() / 8);
     _image_loaded = true;
+    _objects.push_back(*object);
     _object = *object;
-    drawObject();
+    fill(0x111111FF);
+    for(auto it = _objects.begin(); it != _objects.end(); ++it) {
+        drawObject(*it);
+    }
+//    QPoint start = QPoint(-10,-10);
+//    QPoint finish = QPoint(100,10);
+//    drawLineBresenham(start, finish, 0xFF00FFFF);
+}
+
+CurvedObject BsplineView::getObject() {
+    return _object;
 }
 
 float BsplineView::detectScale(std::vector<QPointF> &knots)
@@ -35,16 +46,16 @@ float BsplineView::detectScale(std::vector<QPointF> &knots)
     return std::min((float) this->width() / (x_max * 2), (float) this->height() / (y_max * 2));
 }
 
-void BsplineView::drawObject()
+void BsplineView::drawObject(CurvedObject cur_obj)
 {
-    fill(0x111111FF);
+
     QPoint start = QPoint(std::round((float) this->width() / 2), 0);
     QPoint end = QPoint(std::round((float) this->width() / 2), this->height() - 1);
     drawLineBresenham(start, end, 0xFF00FFFF);
     start = QPoint(0, std::round((float) this->height() / 2));
     end = QPoint(this->width() - 1, std::round((float) this->height() / 2));
     drawLineBresenham(start, end, 0xFF00FFFF);
-    auto knots = this->_object.getKnots();
+    auto knots = cur_obj.getKnots();
     float scale = this->detectScale(knots);
     int x_offset = std::round((float) this->width() / 2);
     int y_offset = std::round((float) this->height() / 2);
@@ -58,11 +69,11 @@ void BsplineView::drawObject()
             prev = *it;
         }
     }
-    auto segments = this->_object.getSegmentsPlain();
+    auto segments = cur_obj.getSegmentsPlain();
     for (auto it = segments.begin(); it < segments.end(); ++it) {
         QPoint f_s_seg = QPoint(scale * it->first.x() + x_offset, scale * it->first.y() + y_offset);
         QPoint f_e_seg = QPoint(scale * it->second.x() + x_offset, scale * it->second.y() + y_offset);
-        drawLineBresenham(f_s_seg, f_e_seg, 0x00FF00FF);
+        drawLineBresenham(f_s_seg, f_e_seg, cur_obj._color);
     }
     this->repaint();
 }

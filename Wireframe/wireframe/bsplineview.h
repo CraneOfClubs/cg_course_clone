@@ -9,11 +9,13 @@
 class BsplineView : public DrawingArea
 {
 public:
+    std::vector<CurvedObject> _objects;
     CurvedObject _object;
     explicit BsplineView(QWidget *parent);
     void loadObject(CurvedObject *object);
-    void drawObject();
+    void drawObject(CurvedObject cur_obj);
     float detectScale(std::vector<QPointF> &knots);
+    CurvedObject getObject();
 private:
     float def_scale = 0.9;
 };

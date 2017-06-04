@@ -30,6 +30,24 @@ const std::vector<Line> CurvedObject::getSegments()
     return _segments;
 }
 
+float CurvedObject::getScale() {
+    float x_max = _knots[0].x();
+    float y_max = _knots[0].y();
+    for (int32_t i = 0; i < _knots.size(); i++) {
+        if (std::fabs(x_max) < std::fabs(_knots[i].x())) {
+            x_max =_knots[i].x();
+        }
+    }
+    for (int32_t i = 0; i < _knots.size(); i++) {
+        if (std::fabs(y_max) < std::fabs(_knots[i].y())) {
+            y_max = _knots[i].y();
+        }
+    }
+    if (x_max == 0) x_max = 1;
+    if (y_max == 0) y_max = 1;
+    return std::max(std::fabs(x_max), std::fabs(y_max));
+}
+
 void CurvedObject::buildSegments()
 {
     float long_step = (_b - _a) / (_n);
@@ -71,3 +89,5 @@ std::vector<std::pair<QPointF, QPointF>> CurvedObject::getSegmentsPlain()
     }
     return segments;
 }
+
+

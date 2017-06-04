@@ -17,6 +17,8 @@ public:
     void fill(uint32_t color);
     void drawLineBresenham(QPoint &from, QPoint &to, uint32_t color);
 private:
+    void clipLine(QPoint &from, QPoint &to);
+    bool drawSimple(QPoint &from, QPoint &to, uint32_t color);
 protected:
     bool _image_loaded = false;
     virtual void paintEvent(QPaintEvent *);

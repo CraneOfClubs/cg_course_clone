@@ -15,7 +15,7 @@ public:
     QPointF calculate(int knot, double t);
 private:
     float getLength();
-    int getKnotByLength(float length_scale);
+    std::pair<int, float> getKnotByLength(float length_scale);
     void calcCoofOfMatr();
     QMatrix4x4 spline_matrix;
     std::vector<QPointF> values;

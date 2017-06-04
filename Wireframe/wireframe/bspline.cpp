@@ -9,14 +9,17 @@ BSpline::BSpline()
 BSpline::BSpline(std::vector<QPointF> values): vectors_x(values.size()), vectors_y(values.size())
 {
     this->values = values;
-    spline_matrix = QMatrix4x4(-1.0/6.0,  3.0/6.0, -3.0/6.0, 1.0/6.0, 3.0/6.0, -6.0/6.0,  3.0/6.0, 0.0/6.0,
-                                            -3.0/6.0,  0.0/6.0,  3.0/6.0, 0.0/6.0, 1.0/6.0,  4.0/6.0,  1.0/6.0, 0.0/6.0);
+    spline_matrix = QMatrix4x4(-1.0/6.0,  3.0/6.0, -3.0/6.0, 1.0/6.0,
+                         3.0/6.0, -6.0/6.0,  3.0/6.0, 0.0/6.0,
+                        -3.0/6.0,  0.0/6.0,  3.0/6.0, 0.0/6.0,
+                         1.0/6.0,  4.0/6.0,  1.0/6.0, 0.0/6.0);
     this->calcCoofOfMatr();
 }
 
 QPointF BSpline::calculate(double len)
 {
-    return calculate(this->getKnotByLength(len), len);
+    auto pair = this->getKnotByLength(len);
+    return calculate(pair.first, len);
 }
 
 QPointF BSpline::calculate(int knot, double len)
@@ -28,23 +31,27 @@ QPointF BSpline::calculate(int knot, double len)
     return point;
 }
 
-int BSpline::getKnotByLength(float length_scale)
+
+std::pair<int, float> BSpline::getKnotByLength(float length_scale)
 {
     float length = this->getLength() * length_scale;
 
     float curr_len = 0;
     for (uint i = 1; i < this->values.size() - 2; ++i) {
         QPointF prev = calculate(i, 0);
-        for (float t = 0.01f; t < 1.0f; t += 0.001f) {
+        for (float t = 0.001f; t < 1.0f; t += 0.001f) {
             QPointF curr = calculate(i, t);
             curr_len += std::sqrt(std::pow(curr.x() - prev.x(), 2) + std::pow(curr.y() - prev.y(), 2));
             if (curr_len > length) {
-                return i;
+                return std::make_pair(i, t);
             }
+            prev = curr;
         }
     }
-    return this->values.size() - 2;
+    return std::make_pair(this->values.size() - 2, 0);
 }
+
+
 
 void BSpline::calcCoofOfMatr()
 {
@@ -61,10 +68,16 @@ float BSpline::getLength()
     float len = 0;
     for (uint i = 1; i < this->values.size() - 2; ++i) {
         QPointF previous = calculate(i, 0);
-        for (float f_j = 0.01f; f_j < 1.0f; f_j += 0.001f) {
+        for (float f_j = 0.001f; f_j < 1.0f; f_j += 0.001f) {
             QPointF currentdelt = calculate(i, f_j);
             len += std::sqrt(std::pow(currentdelt.x() - previous.x(), 2) + std::pow(currentdelt.y() - previous.y(), 2));
         }
     }
     return len;
 }
+
+
+//    spline_matrix = QMatrix4x4(1.0/2.0,  1.0/2.0, 0.0/2.0, 0.0/2.0,
+//                         -2.0/2.0, 2.0/2.0,  0.0/2.0, 0.0/2.0,
+//                        -3.0/2.0,  0.0/2.0,  3.0/2.0, 0.0/2.0,
+//                         1.0/2.0,  -2.0/2.0,  1.0/2.0, 0.0/2.0);
